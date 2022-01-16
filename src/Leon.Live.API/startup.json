@@ -1,0 +1,9 @@
+{
+  "NetProCoreStartup": 0,
+  "ApiProxyStartup": 0,
+  "ErrorHandlerStartup": 0,
+  "StaticFilesStartup": 100,
+  "RoutingStartup": 200,
+  "EndpointsStartup": 1000,
+  "ApiStartup": 2147483647
+}
