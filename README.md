@@ -2,6 +2,7 @@
 # Leon.Live 简介
 Leon.Live是一个跨平台Webapi服务,基于开源组件[LeonKou/NetPro](https://github.com/LeonKou/NetPro)，由netproapi脚手架生成，运行时依赖于.Net6.0+。
 
+安装[ffmpeg](https://github.com/BtbN/FFmpeg-Builds/releases),并配置环境变量指定bin目录
 ...(待补充)
 ---
 
