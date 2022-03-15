@@ -14,8 +14,9 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<PackageReference Include="NetPro.Proxy" Version="6.0.3-beta.4" />
-		<PackageReference Include="NetPro.Web.Api" Version="6.0.3-beta.4" />
+		<PackageReference Include="NetPro.Proxy" Version="6.0.5-beta.6" />
+		<PackageReference Include="NetPro.Swagger" Version="6.0.5-beta.6" />
+		<PackageReference Include="NetPro.Web.Api" Version="6.0.5-beta.6" />
 	</ItemGroup>
 
 	<ItemGroup>
