@@ -69,7 +69,7 @@ linux:
 
 ## 使用
 
-```
+```shell
 ffmpeg -re -stream_loop -1 -i in.mp4 -c copy -f rtsp rtsp://192.168.0.91:8554/mystream
 ```
 - -re  是以流的方式读取
@@ -77,7 +77,7 @@ ffmpeg -re -stream_loop -1 -i in.mp4 -c copy -f rtsp rtsp://192.168.0.91:8554/my
 - -i  就是输入的文件
 - -f  格式化输出到哪里
 
-```
+```shell
 ffmpeg -re -i /home/xx/Documents/in.mp4 -c copy -f rtsp rtsp://192.168.74.130:8554/room1
 ```
 - -re  是以流的方式读取
@@ -85,11 +85,102 @@ ffmpeg -re -i /home/xx/Documents/in.mp4 -c copy -f rtsp rtsp://192.168.74.130:85
 - -f  格式化输出到哪里
 - -c copy 编码器不变
 
+```shell
+# rtsp 转RTMP ；先启动rtsp-simple-server程序再执行以下命令;rtsp-simple-serverde rtmp端口默认1935
+ ffmpeg -i "rtsp://admin:111111@10.16.128.16:66/Streaming/Channels/103?transportmode=unicast&profile=Profile_3" -vcodec copy -acodec copy -f flv -r 11 "rtmp://127.0.0.1:1935/live"
 ```
-ffmpeg -i "rtsp://admin:Dswy8866@10.16.37.6:554/Streaming/Channels/103?transportmode=unicast&profile=Profile_3" -f flv -r 5 -s "640x480" -an "rtmp://127.0.0.1:1935/live/"
+响应成功：
+```shell
+ffmpeg version N-107055-g73302aa193-20220606 Copyright (c) 2000-2022 the FFmpeg developers
+  built with gcc 11.2.0 (crosstool-NG 1.24.0.533_681aaef)
+  configuration: --prefix=/ffbuild/prefix --pkg-config-flags=--static --pkg-config=pkg-config --cross-prefix=x86_64-w64-mingw32- --arch=x86_64 --target-os=mingw32 --enable-gpl --enable-version3 --disable-debug --enable-shared --disable-static --disable-w32threads --enable-pthreads --enable-iconv --enable-libxml2 --enable-zlib --enable-libfreetype --enable-libfribidi --enable-gmp --enable-lzma --enable-fontconfig --enable-libvorbis --enable-opencl --disable-libpulse --enable-libvmaf --disable-libxcb --disable-xlib --enable-amf --enable-libaom --enable-libaribb24 --enable-avisynth --enable-libdav1d --enable-libdavs2 --disable-libfdk-aac --enable-ffnvcodec --enable-cuda-llvm --enable-frei0r --enable-libgme --enable-libass --enable-libbluray --enable-libjxl --enable-libmp3lame --enable-libopus --enable-librist --enable-libtheora --enable-libvpx --enable-libwebp --enable-lv2 --enable-libmfx --enable-libopencore-amrnb --enable-libopencore-amrwb --enable-libopenh264 --enable-libopenjpeg --enable-libopenmpt --enable-librav1e --enable-librubberband --enable-schannel --enable-sdl2 --enable-libsoxr --enable-libsrt --enable-libsvtav1 --enable-libtwolame --enable-libuavs3d --disable-libdrm --disable-vaapi --enable-libvidstab --enable-vulkan --enable-libshaderc --enable-libplacebo --enable-libx264 --enable-libx265 --enable-libxavs2 --enable-libxvid --enable-libzimg --enable-libzvbi --extra-cflags=-DLIBTWOLAME_STATIC --extra-cxxflags= --extra-ldflags=-pthread --extra-ldexeflags= --extra-libs=-lgomp --extra-version=20220606
+  libavutil      57. 26.100 / 57. 26.100
+  libavcodec     59. 33.100 / 59. 33.100
+  libavformat    59. 24.100 / 59. 24.100
+  libavdevice    59.  6.100 / 59.  6.100
+  libavfilter     8. 40.100 /  8. 40.100
+  libswscale      6.  6.100 /  6.  6.100
+  libswresample   4.  6.100 /  4.  6.100
+  libpostproc    56.  5.100 / 56.  5.100
+Input #0, rtsp, from 'rtsp://admin:Dswy8866@10.16.37.6:554/Streaming/Channels/103?transportmode=unicast&profile=Profile_3':
+  Metadata:
+    title           : Media Presentation
+  Duration: N/A, start: 0.000000, bitrate: N/A
+  Stream #0:0: Video: h264 (Main), yuvj420p(pc, bt709, progressive), 704x576, 10 fps, 25 tbr, 90k tbn
+  Stream #0:1: Audio: aac (LC), 16000 Hz, mono, fltp
+Output #0, flv, to 'rtmp://127.0.0.1:1935/live':
+  Metadata:
+    title           : Media Presentation
+    encoder         : Lavf59.24.100
+  Stream #0:0: Video: h264 (Main) ([7][0][0][0] / 0x0007), yuvj420p(pc, bt709, progressive), 704x576, q=2-31, 10 fps, 25 tbr, 1k tbn
+  Stream #0:1: Audio: aac (LC) ([10][0][0][0] / 0x000A), 16000 Hz, mono, fltp
+Stream mapping:
+  Stream #0:0 -> #0:0 (copy)
+  Stream #0:1 -> #0:1 (copy)
+Press [q] to stop, [?] for help
+[flv @ 0000018fd525e780] Timestamps are unset in a packet for stream 0. This is deprecated and will stop working in the future. Fix your code to set the timestamps properly
+[rtsp @ 0000018fd706c040] max delay reached. need to consume packet=1003.2kbits/s speed=0.984x
+[rtsp @ 0000018fd706c040] RTP: missed 207 packets
+frame= 1793 fps= 10 q=-1.0 00000000000000000000000000000000size=   21966kB time=00:03:01.56 bitrate= 991.1kbits/s speed=1.02x
 ```
 
 - -i 远程rtsp文件地址
 - -r  fps 每秒传输帧数 
 - -s  分辨率
 - -an 转rtmp后的地址（ffmpeg当rtmp服务器）
+
+rtsp转HLS（m3u8）
+```shell
+ ffmpeg -i "rtsp://admin:111111@10.16.137.16:554/Streaming/Channels/103?transportmode=unicast&profile=Profile_3" -c copy -f hls  -hls_time 3.0 -hls_list_size 2 "http://127.0.0.1:8888/live/test.m3u8"
+```
+
+响应成功：
+```shell
+ffmpeg version N-107055-g73302aa193-20220606 Copyright (c) 2000-2022 the FFmpeg developers
+  built with gcc 11.2.0 (crosstool-NG 1.24.0.533_681aaef)
+  configuration: --prefix=/ffbuild/prefix --pkg-config-flags=--static --pkg-config=pkg-config --cross-prefix=x86_64-w64-mingw32- --arch=x86_64 --target-os=mingw32 --enable-gpl --enable-version3 --disable-debug --enable-shared --disable-static --disable-w32threads --enable-pthreads --enable-iconv --enable-libxml2 --enable-zlib --enable-libfreetype --enable-libfribidi --enable-gmp --enable-lzma --enable-fontconfig --enable-libvorbis --enable-opencl --disable-libpulse --enable-libvmaf --disable-libxcb --disable-xlib --enable-amf --enable-libaom --enable-libaribb24 --enable-avisynth --enable-libdav1d --enable-libdavs2 --disable-libfdk-aac --enable-ffnvcodec --enable-cuda-llvm --enable-frei0r --enable-libgme --enable-libass --enable-libbluray --enable-libjxl --enable-libmp3lame --enable-libopus --enable-librist --enable-libtheora --enable-libvpx --enable-libwebp --enable-lv2 --enable-libmfx --enable-libopencore-amrnb --enable-libopencore-amrwb --enable-libopenh264 --enable-libopenjpeg --enable-libopenmpt --enable-librav1e --enable-librubberband --enable-schannel --enable-sdl2 --enable-libsoxr --enable-libsrt --enable-libsvtav1 --enable-libtwolame --enable-libuavs3d --disable-libdrm --disable-vaapi --enable-libvidstab --enable-vulkan --enable-libshaderc --enable-libplacebo --enable-libx264 --enable-libx265 --enable-libxavs2 --enable-libxvid --enable-libzimg --enable-libzvbi --extra-cflags=-DLIBTWOLAME_STATIC --extra-cxxflags= --extra-ldflags=-pthread --extra-ldexeflags= --extra-libs=-lgomp --extra-version=20220606
+  libavutil      57. 26.100 / 57. 26.100
+  libavcodec     59. 33.100 / 59. 33.100
+  libavformat    59. 24.100 / 59. 24.100
+  libavdevice    59.  6.100 / 59.  6.100
+  libavfilter     8. 40.100 /  8. 40.100
+  libswscale      6.  6.100 /  6.  6.100
+  libswresample   4.  6.100 /  4.  6.100
+  libpostproc    56.  5.100 / 56.  5.100
+Input #0, rtsp, from 'rtsp://admin:Dswy8866@10.16.37.6:554/Streaming/Channels/103?transportmode=unicast&profile=Profile_3':
+  Metadata:
+    title           : Media Presentation
+  Duration: N/A, start: 0.000000, bitrate: N/A
+  Stream #0:0: Video: h264 (Main), yuvj420p(pc, bt709, progressive), 704x576, 10 fps, 25 tbr, 90k tbn
+  Stream #0:1: Audio: aac (LC), 16000 Hz, mono, fltp
+[hls muxer @ 000001e5d89c4b80] No HTTP method set, hls muxer defaulting to method PUT.
+Output #0, hls, to 'http://127.0.0.1:8888/live/test.m3u8':
+  Metadata:
+    title           : Media Presentation
+    encoder         : Lavf59.24.100
+  Stream #0:0: Video: h264 (Main), yuvj420p(pc, bt709, progressive), 704x576, q=2-31, 10 fps, 25 tbr, 90k tbn
+  Stream #0:1: Audio: aac (LC), 16000 Hz, mono, fltp
+Stream mapping:
+  Stream #0:0 -> #0:0 (copy)
+  Stream #0:1 -> #0:1 (copy)
+Press [q] to stop, [?] for help
+[hls @ 000001e5d83bddc0] Timestamps are unset in a packet for stream 0. This is deprecated and will stop working in the future. Fix your code to set the timestamps properly
+[hls @ 000001e5d83bddc0] Opening 'http://127.0.0.1:8888/live/test0.ts' for writing
+[hls @ 000001e5d83bddc0] Opening 'http://127.0.0.1:8888/live/test1.ts' for writing
+[hls @ 000001e5d83bddc0] Opening 'http://127.0.0.1:8888/live/test2.ts' for writing
+[hls @ 000001e5d83bddc0] Opening 'http://127.0.0.1:8888/live/test3.ts' for writing
+[hls @ 000001e5d83bddc0] Opening 'http://127.0.0.1:8888/live/test4.ts' for writing
+[hls @ 000001e5d83bddc0] Opening 'http://127.0.0.1:8888/live/test5.ts' for writing
+[hls @ 000001e5d83bddc0] Opening 'http://127.0.0.1:8888/live/test6.ts' for writing
+[hls @ 000001e5d83bddc0] Opening 'http://127.0.0.1:8888/live/test7.ts' for writing
+[hls @ 000001e5d83bddc0] Opening 'http://127.0.0.1:8888/live/test8.ts' for writing
+[hls @ 000001e5d83bddc0] Opening 'http://127.0.0.1:8888/live/test9.ts' for writing
+[hls @ 000001e5d83bddc0] Opening 'http://127.0.0.1:8888/live/test10.ts' for writing
+[hls @ 000001e5d83bddc0] Opening 'http://127.0.0.1:8888/live/test11.ts' for writing
+[hls @ 000001e5d83bddc0] Opening 'http://127.0.0.1:8888/live/test12.ts' for writing
+[hls @ 000001e5d83bddc0] Opening 'http://127.0.0.1:8888/live/test13.ts' for writing
+[hls @ 000001e5d83bddc0] Opening 'http://127.0.0.1:8888/live/test14.ts' for writing
+[hls @ 000001e5d83bddc0] Opening 'http://127.0.0.1:8888/live/test15.ts' for writing
+[hls @ 000001e5d83bddc0] Opening 'http://127.0.0.1:8888/live/test16.ts' for writing
+[hls @ 000001e5d83bddc0] Opening 'http://127.0.0.1:8888/live/test17.ts' for writing
+```
