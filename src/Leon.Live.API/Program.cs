@@ -1,11 +1,3 @@
-
-Environment.SetEnvironmentVariable("ASPNETCORE_HOSTINGSTARTUPASSEMBLIES", "NetPro.Startup");
 var host = Host.CreateDefaultBuilder(args)
-                .ConfigureWebHostDefaults(webBuilder =>
-                {
-                    webBuilder.ConfigureKestrel(options =>
-                    {
-                    });
-                });
-
+               .ConfigureWebHostDefaults(webBuilder => webBuilder.UseStartup("NetPro.Startup"));
 host.Build().Run();

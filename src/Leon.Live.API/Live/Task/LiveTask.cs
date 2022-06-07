@@ -5,10 +5,14 @@ using System.Threading;
 
 namespace Leon.Live.API
 {
-    public class LiveTask : IStartupTask
+    public class LiveTask //: IStartupTask
     {
         public int Order => 0;
-
+        private readonly IConfiguration _configuration;
+        public LiveTask(IConfiguration configuration)
+        {
+            _configuration = configuration;
+        }
         public void Execute()
         {
             //RTSP
@@ -16,7 +20,7 @@ namespace Leon.Live.API
 
             var rtspcancellationTokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(5));
 
-            var rtspclient = new VideoStreamClient("D:/ffmpeg-5.0/bin/ffmpeg.exe");
+            var rtspclient = new VideoStreamClient(_configuration.GetValue<string>("ffmpeg:Path"));
             rtspclient.NewImageReceived += RTSPNewImageReceived;
             var rtsptask = rtspclient.StartFrameReaderAsync(rtspinputSource, OutputImageFormat.Bmp, rtspcancellationTokenSource.Token);
             rtspclient.NewImageReceived -= RTSPNewImageReceived;

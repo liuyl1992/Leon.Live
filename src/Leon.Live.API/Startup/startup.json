@@ -1,10 +1,15 @@
 {
-  "NetProCoreStartup": 0,
+  "NetProDependencyStartup": 0,
   "ApiProxyStartup": 0,
   "ErrorHandlerStartup": 0,
+  "NetProCoreStartup": 0,
+  "NetProSerilogStartup": 0,
+  "AutoMapperStartup": 0,
   "SwaggerStartup": 100,
   "StaticFilesStartup": 100,
   "RoutingStartup": 200,
+  "GlobalizationStartup": 900,
   "EndpointsStartup": 1000,
+  "FFmpegStartup": 1000,
   "ApiStartup": 2147483647
 }

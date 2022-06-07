@@ -2,75 +2,94 @@
 # Leon.Live 简介
 Leon.Live是一个跨平台Webapi服务,基于开源组件[LeonKou/NetPro](https://github.com/LeonKou/NetPro)，由netproapi脚手架生成，运行时依赖于.Net6.0+。
 
-安装[ffmpeg](https://github.com/BtbN/FFmpeg-Builds/releases),并配置环境变量指定bin目录
-...(待补充)
----
 
-## 环境
 
-### 开发
+摄像头发现协议使用[Mictlanix.DotNet.OnvifClient](Mictlanix.DotNet.OnvifClient)
 
-swagger地址：[swagger]("http://swagger")
-
-cicd地址：[Jenkins]("http://Jenkins")
-
-database：
-- 地址：
-- 账号：
-- 密码：
-
-### 测试
-
-swagger地址：[swagger]("http://swagger")
-
-cicd地址：[Jenkins]("http://Jenkins")
-
-database：
-- 地址：
-- 账号：
-- 密码：
-
-### 生产
-
-swagger地址：[swagger]("http://swagger")
-
-cicd地址：[Jenkins]("http://Jenkins")
 
 ---
+# FFmpeg 
+FFmpeg全名是Fast Forward MPEG(Moving Picture Experts Group)是一个集成了各种编解码器的库；从视频采集、视频编码到视频传输（包括RTP、RTCP、RTMP、RTSP等等协议）都可以直接使用FFMPEG来完成，更重要的一点FFMPEG是跨平台的，Windows、Linux、Aandroid、IOS这些主流系统通吃
 
-## 支持以下几种开发方式
+## 安装
 
-### 1、简化版
- API主程序集下每个业务模块一个文件夹隔离，业务模块下包含此业务模块的Controller、Service、Entity等等
-
-### 2、程序集隔离
-
-每个业务模块一个程序集，每个程序集中包含当前业务模块需要的所有Controller、Service、Entity等等，再API主程序集引用需要的业务模块，业务模块之间尽可能不互相依赖，引用。
-
-### 3、插件方式
-
-在`2、程序集隔离`的基础上，API主程序集不直接引用需要的业务模块程序集，而是将各业务模块程序集放置在指定的插件文件夹中，插件路径配置如下：
-```json
-"TypeFinderOption": {
-		"MountePath": ""//windows默认目录： C:/opt/netpro ; linux环境：/opt/netpro
-	},
+- 下载[ffmpeg](https://github.com/BtbN/FFmpeg-Builds/releases)
+- 设置环境变量
+既配置环境变量指定bin目录
+```shell
+$env:Path += ";E:\ffmpeg-gpl-shared\bin" #(windows)
+```
+```shell
+export PATH="$PATH:/ffmpeg-gpl-shared/bin" #(linux)
 ```
 
----
-
-### 按需要可配置以下节点来实现相应需求
-appsetting.json
-
-```json
-      "NetProOption": {
-		//"UseResponseCompression": false, //是否启用响应压缩
-		//"ThreadMinCount": 5, //最小线程数
-		//"ApplicationName": "", //应用名称
-		//"RequestWarningThreshold": 5, //请求时长的警告临界值
-		"RoutePrefix": "api" //全局路由前缀
-	},
+## 版本
+FFMPEG [https://github.com/BtbN/FFmpeg-Builds/releases](https://github.com/BtbN/FFmpeg-Builds/releases)分为3个版本：Static，Shared，Dev。前两个版本可以直接在命令行中使用，他们的区别在于：
+- Static(静态库版本): 里面只有3个应用程序：ffmpeg.exe，ffplay.exe，ffprobe.exe，每个exe的体积都很大，相关的Dll已经被编译到exe里面去了。作为工具而言此版本就可以满足我们的需求；
+- Shared（动态库版本）:里面除了3个应用程序：ffmpeg.exe，ffplay.exe，ffprobe.exe之外，还有一些Dll，比如说avcodec-54.dll之类的。Shared里面的exe体积很小，他们在运行的时候，到相应的Dll中调用功能。程序运行过程必须依赖于提供的dll文件；
+- Dev（开发者版本）:是用于开发的，里面包含了库文件xxx.lib以及头文件xxx.h，这个版本不包含exe文件。dev版本中include文件夹内文件用途
 
 ```
 
-## 相关业务注意事项：
 
+libavcodec：用于各种类型声音/图像编解码；
+libavdevice：用于音视频数据采集和渲染等功能的设备相关;
+libavfilter：包含多媒体处理常用的滤镜功能;
+libavformat：包含多种多媒体容器格式的封装、解封装工具;
+libavutil：包含一些公共的工具函数；
+libpostproc：用于后期效果处理；
+libswresample：用于音频重采样和格式转换等功能;
+libswscale：用于视频场景比例缩放、色彩映射转换；
+```
+
+# RTSP服务器
+rtsp服务器通过ffmpeg推流拉流
+- RTSP服务器:
+GO开发的[rtsp-simple-server](https://github.com/aler9/rtsp-simple-server)，支持[多系统版本](https://github.com/aler9/rtsp-simple-server/releases)
+C++ 开发的[srs](https://github.com/ossrs/srs)，Bee 版本是一个简单高效的实时视频服务器，支持RTMP/WebRTC/HLS/HTTP-FLV/SRT。
+
+-  RTSP C# nuget
+[RtspClientSharp](https://github.com/BogdanovKirill/RtspClientSharp)
+
+- rtsp格式
+默认rtsp://192.168.8.100/Streaming/Channels/101?transportmode=unicast&profile=Profile_1 （海康）
+如需认证 rtsp://账户名:账户密码@192.168.8.100
+## 安装
+- 下载[rtsp-simple-server](https://github.com/aler9/rtsp-simple-server/releases)
+- 启动
+
+windows:
+```ps
+ ./rtsp-simple-server.exe 
+```
+linux:
+```shell
+./rtsp-simple-server
+```
+
+## 使用
+
+```
+ffmpeg -re -stream_loop -1 -i in.mp4 -c copy -f rtsp rtsp://192.168.0.91:8554/mystream
+```
+- -re  是以流的方式读取
+- -stream_loop -1   表示无限循环读取
+- -i  就是输入的文件
+- -f  格式化输出到哪里
+
+```
+ffmpeg -re -i /home/xx/Documents/in.mp4 -c copy -f rtsp rtsp://192.168.74.130:8554/room1
+```
+- -re  是以流的方式读取
+- -i  就是输入的文件
+- -f  格式化输出到哪里
+- -c copy 编码器不变
+
+```
+ffmpeg -i "rtsp://admin:Dswy8866@10.16.37.6:554/Streaming/Channels/103?transportmode=unicast&profile=Profile_3" -f flv -r 5 -s "640x480" -an "rtmp://127.0.0.1:1935/live/"
+```
+
+- -i 远程rtsp文件地址
+- -r  fps 每秒传输帧数 
+- -s  分辨率
+- -an 转rtmp后的地址（ffmpeg当rtmp服务器）

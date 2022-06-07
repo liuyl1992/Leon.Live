@@ -11,7 +11,7 @@ namespace Leon.Live.API
         Task GetRealTimeVideoAsync();
     }
 
-    public class LiveService : ILiveService
+    public class LiveService : ILiveService,IScopedDependency
     {
         private HttpClient _client;
 
