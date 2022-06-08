@@ -55,6 +55,7 @@ C++ 开发的[srs](https://github.com/ossrs/srs)，Bee 版本是一个简单高�
 默认rtsp://192.168.8.100/Streaming/Channels/101?transportmode=unicast&profile=Profile_1 （海康）
 如需认证 rtsp://账户名:账户密码@192.168.8.100
 ## 安装
+- 安装ffmpeg
 - 下载[rtsp-simple-server](https://github.com/aler9/rtsp-simple-server/releases)
 - 启动
 
@@ -67,8 +68,37 @@ linux:
 ./rtsp-simple-server
 ```
 
-## 使用
+docker:
+需要将ffmpeg打包到镜像中
+Dockerfile
+```Dockerfile
+FROM aler9/rtsp-simple-server AS rtsp
+FROM alpine:3.12
+RUN apk add --no-cache ffmpeg
+COPY --from=rtsp /rtsp-simple-server /
+COPY --from=rtsp /rtsp-simple-server.yml / 
+ENTRYPOINT [ "/rtsp-simple-server" ]
 
+```
+```shell
+docker build -t rtsp-server .  # 打包docker镜像
+docker login dockerhub.com  #登录
+docker tag rtsp-server dockerhub/library/rtsp-server # 打tag
+docker push dockerhub/library/rtsp-server # 推送仓库
+docker run --rm -d -e RTSP_PROTOCOLS=tcp --restart always -p 8554:8554 -p 1935:1935  -p 8888:8888 library/rtsp-server #运行
+docker logs -f --tail 100  rtsp-server # 查看日志
+
+```
+资源占用
+```
+CONTAINER ID   NAME             CPU %     MEM USAGE / LIMIT     MEM %     NET I/O         BLOCK I/O   PIDS
+67480587e8e9   wonderful_pike   3.10%     8.141MiB / 7.637GiB   0.10%     713MB / 683MB   0B / 0B     14
+
+# 2个视频流内存占用仅8M CPU使用率仅为3.1%
+```
+
+## 使用
+1、mp4转rtsp流
 ```shell
 ffmpeg -re -stream_loop -1 -i in.mp4 -c copy -f rtsp rtsp://192.168.0.91:8554/mystream
 ```
@@ -77,6 +107,7 @@ ffmpeg -re -stream_loop -1 -i in.mp4 -c copy -f rtsp rtsp://192.168.0.91:8554/my
 - -i  就是输入的文件
 - -f  格式化输出到哪里
 
+2、MP4转rtsp流
 ```shell
 ffmpeg -re -i /home/xx/Documents/in.mp4 -c copy -f rtsp rtsp://192.168.74.130:8554/room1
 ```
@@ -85,9 +116,9 @@ ffmpeg -re -i /home/xx/Documents/in.mp4 -c copy -f rtsp rtsp://192.168.74.130:85
 - -f  格式化输出到哪里
 - -c copy 编码器不变
 
+3、rtsp转rtmp
 ```shell
-# rtsp 转RTMP ；先启动rtsp-simple-server程序再执行以下命令;rtsp-simple-serverde rtmp端口默认1935
- ffmpeg -i "rtsp://admin:111111@10.16.128.16:66/Streaming/Channels/103?transportmode=unicast&profile=Profile_3" -vcodec copy -acodec copy -f flv -r 11 "rtmp://127.0.0.1:1935/live"
+ffmpeg -i "rtsp://admin:111111@10.16.128.16:66/Streaming/Channels/103?transportmode=unicast&profile=Profile_3" -vcodec copy -acodec copy -f flv -r 11 "rtmp://127.0.0.1:1935/live" # rtsp 转RTMP ；先启动rtsp-simple-server程序再执行以下命令;rtsp-simple-serverde rtmp端口默认1935
 ```
 响应成功：
 ```shell
@@ -129,7 +160,7 @@ frame= 1793 fps= 10 q=-1.0 00000000000000000000000000000000size=   21966kB time=
 - -s  分辨率
 - -an 转rtmp后的地址（ffmpeg当rtmp服务器）
 
-rtsp转HLS（m3u8）
+4、 rtsp转HLS（m3u8）
 ```shell
  ffmpeg -i "rtsp://admin:111111@10.16.137.16:554/Streaming/Channels/103?transportmode=unicast&profile=Profile_3" -c copy -f hls  -hls_time 3.0 -hls_list_size 2 "http://127.0.0.1:8888/live/test.m3u8"
 ```
@@ -183,4 +214,8 @@ Press [q] to stop, [?] for help
 [hls @ 000001e5d83bddc0] Opening 'http://127.0.0.1:8888/live/test15.ts' for writing
 [hls @ 000001e5d83bddc0] Opening 'http://127.0.0.1:8888/live/test16.ts' for writing
 [hls @ 000001e5d83bddc0] Opening 'http://127.0.0.1:8888/live/test17.ts' for writing
+```
+5、rtsp转rtsp（减少延迟降低IDR帧间隔）
+```shell
+ffmpeg -i rtsp://original-stream -pix_fmt yuv420p -c:v libx264 -preset ultrafast -b:v 600k -max_muxing_queue_size 1024 -g 30 -f rtsp rtsp://localhost:$RTSP_PORT/compressed
 ```
