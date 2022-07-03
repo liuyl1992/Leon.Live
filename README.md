@@ -98,7 +98,7 @@ CONTAINER ID   NAME             CPU %     MEM USAGE / LIMIT     MEM %     NET I/
 ```
 
 ## 使用
-1、mp4转rtsp流
+1、mp4 通过rtsp推流到RTSP服务器
 ```shell
 ffmpeg -re -stream_loop -1 -i in.mp4 -c copy -f rtsp rtsp://192.168.0.91:8554/mystream
 ```
@@ -107,7 +107,7 @@ ffmpeg -re -stream_loop -1 -i in.mp4 -c copy -f rtsp rtsp://192.168.0.91:8554/my
 - -i  就是输入的文件
 - -f  格式化输出到哪里
 
-2、MP4转rtsp流
+2、MP4通过rtsp推流示例2
 ```shell
 ffmpeg -re -i /home/xx/Documents/in.mp4 -c copy -f rtsp rtsp://192.168.74.130:8554/room1
 ```
@@ -116,9 +116,9 @@ ffmpeg -re -i /home/xx/Documents/in.mp4 -c copy -f rtsp rtsp://192.168.74.130:85
 - -f  格式化输出到哪里
 - -c copy 编码器不变
 
-3、rtsp转rtmp
+3、rtsp通过rtmp协议推流到RTSP服务器(常用于监控摄像机)
 ```shell
-ffmpeg -i "rtsp://admin:111111@10.16.128.16:66/Streaming/Channels/103?transportmode=unicast&profile=Profile_3" -vcodec copy -acodec copy -f flv -r 11 "rtmp://127.0.0.1:1935/live" # rtsp 转RTMP ；先启动rtsp-simple-server程序再执行以下命令;rtsp-simple-serverde rtmp端口默认1935
+ffmpeg -i "rtsp://admin:111111@10.16.128.16:66/Streaming/Channels/103?transportmode=unicast&profile=Profile_3" -vcodec copy -acodec copy -f flv -r 11 "rtmp://127.0.0.1:1935/live/livestream" # rtsp 转RTMP ；先启动rtsp-simple-server程序再执行以下命令;rtsp-simple-serverde rtmp端口默认1935
 ```
 响应成功：
 ```shell
@@ -159,11 +159,6 @@ frame= 1793 fps= 10 q=-1.0 00000000000000000000000000000000size=   21966kB time=
 - -r  fps 每秒传输帧数 
 - -s  分辨率
 - -an 转rtmp后的地址（ffmpeg当rtmp服务器）
-
-4、 rtsp转HLS（m3u8）
-```shell
- ffmpeg -i "rtsp://admin:111111@10.16.137.16:554/Streaming/Channels/103?transportmode=unicast&profile=Profile_3" -c copy -f hls  -hls_time 3.0 -hls_list_size 2 "http://127.0.0.1:8888/live/test.m3u8"
-```
 
 响应成功：
 ```shell
@@ -219,3 +214,39 @@ Press [q] to stop, [?] for help
 ```shell
 ffmpeg -i rtsp://original-stream -pix_fmt yuv420p -c:v libx264 -preset ultrafast -b:v 600k -max_muxing_queue_size 1024 -g 30 -f rtsp rtsp://localhost:$RTSP_PORT/compressed
 ```
+
+## 拉流
+
+
+rtsp-simple-server 服务支持Rtmp、Rtsp、HLS三种协议拉流
+
+通过Rtmp推流到rtsp-simple-server后，会默认支持以上三种协议拉流
+
+```
+[RTSP] listener opened on :8554 (TCP)
+[RTMP] listener opened on :1935
+[HLS] listener opened on :8888
+```
+
+例如推流路径为 /live/livestream
+```
+ ffmpeg -i "rtsp://username:pwd@172.168.55.77:80/Streaming/Channels/103?transportmode=unicast&profile=Profile_3" -r 5 -c copy -f flv rtmp://rtsp-simple-serverhost/live/livestream
+```
+
+客户端HLS拉流
+
+方式一  直接嵌入iframe方式
+
+不需要指定m3u8后缀
+```html
+<iframe src="http://rtsp-simple-server-ip:8888/mystream" scrolling="no"></iframe>
+```
+
+方式二 利用hls库播放m3u8
+
+必须指定m3u8后缀
+
+```html
+<video src="http://localhost:8888/mystream/index.m3u8"></video>
+```
+注意：大多数浏览器不直接支持HLS（Safari除外）;必须使用Javascript库（如hls.js）来加载流。
