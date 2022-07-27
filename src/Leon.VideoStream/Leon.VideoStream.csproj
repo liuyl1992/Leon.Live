@@ -5,6 +5,7 @@
 		<PackageLicenseExpression>MIT</PackageLicenseExpression>
 	</PropertyGroup>
 	<ItemGroup>
+		<PackageReference Include="CliWrap" Version="3.4.4" />
 		<PackageReference Include="Xabe.FFmpeg" Version="5.2.0" />
 	</ItemGroup>
 </Project>

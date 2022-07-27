@@ -3,7 +3,7 @@ using WebApiClientCore;
 
 namespace Leon.Live.API
 {
-    public interface ILiveProxy
+    public interface ILiveProxy : IHttpApi
     {
         [WebApiClientCore.Attributes.HttpGet("https://anthonygiretti.blob.core.windows.net/videos/earth.mp4")]
         //[ApiClientFilter]

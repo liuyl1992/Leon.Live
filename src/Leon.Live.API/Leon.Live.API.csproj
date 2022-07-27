@@ -2,6 +2,7 @@
 	<PropertyGroup>
 		<TargetFramework>net6.0</TargetFramework>
 		<IsPackable>false</IsPackable>
+		<LangVersion>preview</LangVersion>
 	</PropertyGroup>
 
 	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
@@ -15,27 +16,36 @@
 	<ItemGroup>
 		<None Include="ConfigJsons\*" />
 	</ItemGroup>
+	<ItemGroup>
+		<Content Remove="ConfigJsons\proxy.json" />
+	</ItemGroup>
 
 	<ItemGroup>
 		<PackageReference Include="Mictlanix.DotNet.OnvifClient" Version="0.0.3" />
-		<PackageReference Include="NetPro.Web.Api" Version="6.0.8" />
+		<PackageReference Include="NetPro.Web.Api" Version="6.0.15" />
 		<!--按需加载NetPro插件实现引用即启用，所有插件说明请参阅 https://github.com/LeonKou/NetPro/tree/dev_6.0/src/Library-->
-		<PackageReference Include="NetPro.Globalization" Version="6.0.8" />
-		<PackageReference Include="NetPro.Swagger" Version="6.0.8" />
-		<PackageReference Include="NetPro.AutoMapper" Version="6.0.8" />
-		<PackageReference Include="NetPro.Dependency" Version="6.0.8" />
-		<PackageReference Include="NetPro.Proxy" Version="*" />
+		<PackageReference Include="NetPro.Globalization" Version="6.0.15" />
+		<PackageReference Include="NetPro.Swagger" Version="6.0.15" />
+		<PackageReference Include="NetPro.AutoMapper" Version="6.0.15" />
+		<PackageReference Include="NetPro.Dependency" Version="6.0.15" />
 	</ItemGroup>
 
 	<ItemGroup>
 		<!--按需加载serilog 插件-->
-		<PackageReference Include="NetPro.Serilog" Version="6.0.8" />
-		<PackageReference Include="RtspClientSharp" Version="1.3.3" />
-		<PackageReference Include="Serilog.Sinks.Async" Version="1.5.0" />		
+		<PackageReference Include="NetPro.Serilog" Version="6.0.15" />
+		<!--<PackageReference Include="RtspClientSharp" Version="1.3.3" />-->
+		<PackageReference Include="Serilog.Sinks.Async" Version="1.5.0" />
+		<PackageReference Include="WebApiClientCore" Version="2.0.2" />
 	</ItemGroup>
 
 	<ItemGroup>
-	  <ProjectReference Include="..\Leon.VideoStream\Leon.VideoStream.csproj" />
+		<ProjectReference Include="..\Leon.VideoStream\Leon.VideoStream.csproj" />
 	</ItemGroup>
+
+	<ProjectExtensions>
+		<VisualStudio>
+			<UserProperties appsettings_1json__JsonSchema="" />
+		</VisualStudio>
+	</ProjectExtensions>
 
 </Project>

@@ -11,5 +11,6 @@
   "GlobalizationStartup": 900,
   "EndpointsStartup": 1000,
   "FFmpegStartup": 1000,
-  "ApiStartup": 2147483647
+  "ApiStartup": 2147483647,
+  "RemotingStartup": 2147483647
 }
