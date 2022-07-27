@@ -11,16 +11,21 @@ namespace Leon.Live.API
     {
         Task<Stream> GetVideoAsync();
         Task GetRealTimeVideoAsync();
-        void GetStrViewRtmp(string strRtsp,out string outPutLink,  string type = "rtmp");
+        void GetStrViewRtmp(string strRtsp, out string outPutLink, string type = "rtmp");
     }
 
-    public class LiveService : ILiveService, ISingletonDependency
+    public class LiveService : ILiveService, IScopedDependency
     {
         private HttpClient _client;
+        private IConfiguration _configuration;
+        private ILogger _logger;
 
-        public LiveService()
+        public LiveService(IConfiguration configuration
+            , ILogger<LiveService> logger)
         {
+            _configuration = configuration;
             _client = new HttpClient();
+            _logger = logger;
         }
 
         public async Task<Stream> GetVideoAsync()
@@ -53,35 +58,59 @@ namespace Leon.Live.API
         public void GetStrViewRtmp(string strRtsp, out string outPutLink, string type = "rtmp")
         {
             //rtsp 唯一
-            outPutLink = "rtmp://192.168.150.223/live/livestream";
+            outPutLink = _configuration.GetValue<string>("srs:push");
             string outPutLinkTemp = outPutLink;
-            Task.Factory.StartNew(() => {
-                System.Diagnostics.Process process = new System.Diagnostics.Process();
-                process.StartInfo.WindowStyle = System.Diagnostics.ProcessWindowStyle.Normal;
-                process.StartInfo.FileName = "ffmpeg";
-                process.StartInfo.Arguments = $"""-i "{strRtsp}" -r 5 -c copy -f flv {outPutLinkTemp}""";
-                process.StartInfo.UseShellExecute = false;
-                process.StartInfo.CreateNoWindow = true;
-                process.StartInfo.RedirectStandardOutput = true;
-                process.StartInfo.RedirectStandardInput = true;
-                process.StartInfo.UseShellExecute = false;
-                process.StartInfo.RedirectStandardError = true;
-                process.Start();
+            var task = Task.Factory.StartNew(() =>
+             {
+                 try
+                 {
+                 //System.Diagnostics.Process.GetCurrentProcess(); 
+                 System.Diagnostics.Process process = new System.Diagnostics.Process();
+                 process.StartInfo.WindowStyle = System.Diagnostics.ProcessWindowStyle.Normal;
+                 process.StartInfo.FileName = "ffmpeg";
+                 process.StartInfo.Arguments = $"""-i "{strRtsp}" -r 5 -c copy -f flv {outPutLinkTemp}/srs/live/{Guid.NewGuid()}""";
+                 process.StartInfo.UseShellExecute = false;
+                 process.StartInfo.RedirectStandardInput = true;
+                 process.StartInfo.RedirectStandardOutput = true;
+                 process.StartInfo.RedirectStandardError = true;
+                 process.StartInfo.CreateNoWindow = false;
+                 process.Start();
 
-                StreamReader readerOut = process.StandardOutput;
-                StreamReader readerErr = process.StandardError;
-                // Process the readers e.g. like follows
+                 process.BeginOutputReadLine();
+                 process.BeginErrorReadLine();
 
-                while (!process.HasExited)
-                { 
-                    //string errors = readerErr.ReadToEnd().ToString();
-                    string output = readerOut.ReadToEnd();
-                    Console.WriteLine($"标准输出{output}");
-                }
-                process.Dispose();
-                // ffmpeg -i "rtsp://admin:owd@196.118.37.8:555/Streaming/Channels/103?transportmode=unicast&profile=Profile_3" -r 5 -c copy -f flv rtmp://192.168.236.789/live/livestream
-                //Console.WriteLine($"异常{errors}");
-            }, TaskCreationOptions.LongRunning);
+                 process.OutputDataReceived += (ss, ee) =>
+                  {
+                      _logger.LogTrace($"{ee.Data}");
+                  };
+
+                 process.ErrorDataReceived += (ss, ee) =>
+                  {
+                      if (ee.Data?.Contains("Cannot open connection") ?? false)
+                      {
+                          _logger.LogError($"Cannot open connection");
+                      }
+                      _logger.LogTrace($"{ee.Data}");
+                  };
+
+                 //等待退出
+                 process.WaitForExit();
+
+                 //关闭进程
+                 process.Dispose();
+                 _logger.LogWarning("EXIT!");
+                 }
+                 catch (Exception ex)
+                 {
+                     Console.WriteLine(ex.Message);
+                     throw;
+                 }
+             }, TaskCreationOptions.LongRunning);
+            //task.ContinueWith(failedTask =>
+            //{
+            //    Console.WriteLine("异常");
+            //},
+            //TaskContinuationOptions.OnlyOnFaulted);
         }
 
         ~LiveService()

@@ -33,3 +33,7 @@
 
 ### Startup 文件夹
 此处存放继承了`INetProStartup`接口的依赖注入的startuo实现类，执行顺序依靠实现类的Order属性控制，可在控制台和自动生成的startup.json文件中查看执行顺序并支持自定义，Order值越大越靠后执行
+
+## Reference
+
+> https://www.cnblogs.com/TSINGSEE/p/14037429.html
