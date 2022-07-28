@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Net;
 using System.Threading;
+using System.Linq;
 
 namespace Leon.Live.API.Examples.Controllers
 {
@@ -10,13 +11,15 @@ namespace Leon.Live.API.Examples.Controllers
     {
         private readonly IHostEnvironment _hostEnvironment;
         private readonly ILogger<LiveController> _logger;
-        private readonly ILiveProxy _liveProxy;
+        private readonly ILiveRemoting _liveProxy;
+        private readonly ISRSRemoting _sRSRemoting;
         private readonly ILiveService _liveService;
         private readonly IOnvifService _onvifService;
 
         public LiveController(IHostEnvironment hostEnvironment,
             ILogger<LiveController> logger,
-            ILiveProxy liveProxy,
+            ILiveRemoting liveProxy,
+            ISRSRemoting sRSRemoting,
             ILiveService liveService,
             IOnvifService onvifService
             )
@@ -24,6 +27,7 @@ namespace Leon.Live.API.Examples.Controllers
             _hostEnvironment = hostEnvironment;
             _logger = logger;
             _liveProxy = liveProxy;
+            _sRSRemoting = sRSRemoting;
             _liveService = liveService;
             _onvifService = onvifService;
         }
@@ -57,19 +61,46 @@ namespace Leon.Live.API.Examples.Controllers
         }
 
         /// <summary>
-        /// 播流地址
+        ///  Exchange the RTSP address to the video address
         /// </summary>
         /// <param name="strRtsp"></param>
+        ///  <param name="group"></param>
         /// <param name="authToken">auth token</param>
-        /// <returns>Rtmp;Flv;Hls</returns>
+        /// <returns>
+        /// {
+        /// "rtmp": "rtmp://192.168.56.56/srs/live/E0F08248A3CBC3CA5D58F6C52E4DCC5E88CEC097D34FE81C8EFC7B60AC91DC06?authtoken=",
+        /// "flv": "http://192.168.56.56:8080/srs/live/E0F08248A3CBC3CA5D58F6C52E4DCC5E88CEC097D34FE81C8EFC7B60AC91DC06.flv?authtoken=",
+        /// "hls": "http://192.168.56.56:8080/srs/live/E0F08248A3CBC3CA5D58F6C52E4DCC5E88CEC097D34FE81C8EFC7B60AC91DC06.m3u8?authtoken="
+        /// }
+        /// </returns>
         [HttpGet("video/StrPlay")]
-        public IActionResult GetStrViewRtmp(string strRtsp, string authToken = "")
+        public async Task<IActionResult> GetStrViewRtmp(string strRtsp, string group = "default", string authToken = "")
         {
-            //每次播放视频都用rtsp地址换rtmp
-            //if 发现rtsp地址没有推过流，即进行推流换得rtmp；flv；m3u8地址
-            // else 发现此rtsp有推过流，直接返回映射的rtmp；flv;m3u8地址
-            _liveService.GetStrViewRtmp(strRtsp, out string outrtmpLink, out string outFlvLink, out string outHlsLink, authToken );
-            return Ok(new {Rtmp= outrtmpLink,Flv= outFlvLink, Hls= outHlsLink});
+            //TODO
+            var streams = await _sRSRemoting.GetStreamsBySRSAsync();
+            var onlyPushClients = streams.Streams.Where(s => s.Clients > 0).Select(s => s.Name).ToList();
+
+            var hashRtspKey = onlyPushClients.Select(name =>
+            {
+                var index = name.LastIndexOf('/');
+                return name.Substring(index + 1, name.Length - index - 1);
+            });
+
+            string hashRtsp = EncryptHelper.Sha256(strRtsp + group);//The RTSP in the same group is unique
+            var convertLink = _liveService.ConvertLinkPath(hashRtsp, group);
+            if (hashRtspKey.Where(s => s == hashRtsp).Any())
+            {
+                return Ok(new
+                {
+                    Rtmp = $"{convertLink.OutrtmpLink}?authtoken={authToken}",
+                    Flv = $"{convertLink.OutFlvLink}?authtoken={authToken}",
+                    Hls = $"{convertLink.OutHlsLink}?authtoken={authToken}"
+                });
+            }
+
+            //streams.Streams.Where(s=>s.Name==hashRtsp).FirstOrDefault()?
+            _liveService.GetStrViewRtmp(strRtsp, out string outrtmpLink, out string outFlvLink, out string outHlsLink, group, authToken);
+            return Ok(new { Rtmp = outrtmpLink, Flv = outFlvLink, Hls = outHlsLink });
         }
     }
 }

@@ -1,0 +1,3 @@
+{
+  "RedisOption": "localhost:6379,password=!!!!!!,defaultDatabase=0,preheat=20,ssl=false"
+}

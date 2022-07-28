@@ -1,7 +1,9 @@
 ﻿using CliWrap;
 using Leon.VideoStream;
+using System.Collections.Generic;
 using System.IO;
 using System.Net.Http;
+using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
 
@@ -11,19 +13,28 @@ namespace Leon.Live.API
     {
         Task<Stream> GetVideoAsync();
         Task GetRealTimeVideoAsync();
-        void GetStrViewRtmp(string strRtsp, out string outrtmpLink, out string outFlvLink, out string outHlsLink, string authToken = "");
+        void GetStrViewRtmp(string strRtsp, out string outrtmpLink, out string outFlvLink, out string outHlsLink, string group = "", string authToken = "");
+        (string OutrtmpLink, string OutFlvLink, string OutHlsLink, string RtmpPushAdr) ConvertLinkPath(string hashRtsp, string group = "default");
     }
 
-    public class LiveService : ILiveService, IScopedDependency
+    public class LiveService : ILiveService, ISingletonDependency
     {
+        private static List<int> TaskIdList = new List<int>();
         private HttpClient _client;
-        private IConfiguration _configuration;
-        private ILogger _logger;
+        private readonly ISRSRemoting _sRSRemoting;
+        private readonly RedisClient _redisClient;
+        private readonly IConfiguration _configuration;
+        private readonly ILogger _logger;
 
-        public LiveService(IConfiguration configuration
+        public LiveService(
+            ISRSRemoting sRSRemoting
+            , IConfiguration configuration
+            , RedisClient redisClient
             , ILogger<LiveService> logger)
         {
+            _sRSRemoting = sRSRemoting;
             _configuration = configuration;
+            _redisClient = redisClient;
             _client = new HttpClient();
             _logger = logger;
         }
@@ -59,18 +70,31 @@ namespace Leon.Live.API
             }
         }
 
-        public void GetStrViewRtmp(string strRtsp, out string outrtmpLink, out string outFlvLink, out string outHlsLink, string authToken="")
+        /// <summary>
+        /// Exchange the RTSP address to the video address
+        /// </summary>
+        /// <param name="strRtsp">resp address
+        /// All lowercase except the password
+        /// 
+        /// </param>
+        /// <param name="outrtmpLink"></param>
+        /// <param name="outFlvLink"></param>
+        /// <param name="outHlsLink"></param>
+        /// <param name="group">The RTSP address in the same group is unique</param>
+        /// <param name="authToken"></param>
+        public void GetStrViewRtmp(string strRtsp, out string outrtmpLink, out string outFlvLink, out string outHlsLink, string group = "default", string authToken = "")
         {
-            //rtsp 唯一
-            var mediaPushAddr = _configuration.GetValue<string>("SRS:PushServer");//for example ：srs;rtsp simple server...
-            var httpPort = _configuration.GetValue<string>("SRS:HttpPort");
-            var serverType = "srs";
-            var outPutPath= $"live/{Guid.NewGuid()}";
-            var _rtmpPushAdr = $"{mediaPushAddr}/{serverType}/{outPutPath}?authtoken={authToken}";
-            outrtmpLink = $"rtmp://{_rtmpPushAdr}";
-            outFlvLink = $"http://{mediaPushAddr}:{httpPort}/{serverType}/{outPutPath}.flv?authtoken={authToken}";
-            outHlsLink = $"http://{mediaPushAddr}:{httpPort}/{serverType}/{outPutPath}.m3u8?authtoken={authToken}";
+            string hashRtsp = EncryptHelper.Sha256(strRtsp + group);
+
+            var convertLink = ConvertLinkPath(hashRtsp, group);
+
+            var _rtmpPushAdr = $"{convertLink.RtmpPushAdr}?authtoken={authToken}";
+            outrtmpLink = $"{convertLink.OutrtmpLink}?authtoken={authToken}";
+            outFlvLink = $"{convertLink.OutFlvLink}?authtoken={authToken}";
+            outHlsLink = $"{convertLink.OutHlsLink}?authtoken={authToken}";
+
             _logger.LogInformation($"[push stream address] --> {outrtmpLink}");
+
             var task = Task.Factory.StartNew(() =>
              {
                  try
@@ -85,7 +109,9 @@ namespace Leon.Live.API
                      process.StartInfo.RedirectStandardError = true;
                      process.StartInfo.CreateNoWindow = false;//true:Process依托在当前主进程下，主进程销毁都销毁
                      process.Start();
-                     Console.WriteLine($"{process}");
+                     ProcessManager.ProcessIdDic.TryAdd(hashRtsp, process.Id);
+                     _logger.LogInformation($"[GetStrViewRtmp] rtsp={hashRtsp}--hashRtsp={hashRtsp}");
+                     Console.WriteLine($"{process.Id}");
 
                      process.BeginOutputReadLine();
                      process.BeginErrorReadLine();
@@ -123,11 +149,35 @@ namespace Leon.Live.API
              });//, TaskCreationOptions.LongRunning
             task.ContinueWith(failedTask =>
             {
-                Console.WriteLine($"{failedTask?.Exception?.Message}");
+                Console.WriteLine($"[Error] {failedTask?.Exception?.Message}");
             },
             TaskContinuationOptions.OnlyOnFaulted);
         }
 
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="hashRtsp"></param>
+        /// <param name="group"></param>
+        /// <returns></returns>
+        public (string OutrtmpLink, string OutFlvLink, string OutHlsLink, string RtmpPushAdr) ConvertLinkPath(string hashRtsp, string group = "default")
+        {
+            var mediaPushAddr = _configuration.GetValue<string>("SRS:PushServer");//for example ：srs;rtsp simple server...
+            var httpPort = _configuration.GetValue<int>("SRS:HttpPort",8080);
+            var serverType = "srs";
+            string outPutPath = $"{serverType}/{group}/live/{hashRtsp}";//{Guid.NewGuid();
+            if (string.IsNullOrWhiteSpace(group))
+            {
+                outPutPath = $"{serverType}/default/live/{hashRtsp}";//{Guid.NewGuid()
+            }
+
+            var _rtmpPushAdr = $"{mediaPushAddr}/{outPutPath}";
+            var outrtmpLink = $"rtmp://{_rtmpPushAdr}";
+            var outFlvLink = $"http://{mediaPushAddr}:{httpPort}/{outPutPath}.flv";
+            var outHlsLink = $"http://{mediaPushAddr}:{httpPort}/{outPutPath}.m3u8";
+            return (outrtmpLink, outFlvLink, outHlsLink, _rtmpPushAdr);
+        }
         ~LiveService()
         {
             if (_client != null)
