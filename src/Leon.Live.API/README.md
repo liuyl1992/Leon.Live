@@ -1,4 +1,15 @@
 # 说明
+
+视频辅助服务
+
+architecture diagram：
+
+![](../../docs/mediaArchite.png)
+
+architecture flow:
+
+![](../../docs/mediaflow.png)
+
 ## 文件夹划分规则：
 
 除了Startup和Protos文件夹外，其他都是以一个业务一个文件夹划分
