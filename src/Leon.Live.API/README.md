@@ -1,6 +1,15 @@
 # 说明
 
 视频辅助服务
+支持多个视频服务解决方案
+
+## ZLMediaKit
+Github:[ZLMediaKit](https://github.com/ZLMediaKit/ZLMediaKit)
+ZLMediaKit提供API方式，将视频源地址发给ZLMediaKit，由ZLMediaKit主动进行拉流后再进行视频的分发，分发的视频流支持主流绝大部分协议，例如rtmp;flv;hls等
+
+## SRS
+Github:[SRS](https://github.com/ossrs/srs/)
+SRS主要以主动通过ffmpeg或OBS进行推流到SRS服务器，由SRS服务器负责视频流的分发，支持rtmp;flv;hls
 
 architecture diagram：
 
