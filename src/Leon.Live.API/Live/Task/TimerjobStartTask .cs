@@ -56,7 +56,6 @@ public class TimerjobStartTask : IStartupTaskAsync
         {
             if (ProcessManager.ProcessIdDic.TryGetValue(item, out int value))//key is hash for rtsp,value is ffmpeg processId
             {
-
                 try
                 {
                     var process = Process.GetProcessById(value);
@@ -64,99 +63,16 @@ public class TimerjobStartTask : IStartupTaskAsync
                     process.WaitForExit();
                     process.Dispose();
                 }
-                catch (Exception)
+                catch (Exception ex)
                 {
-                    Console.WriteLine($"ProcessId={value} not found");
+                    Console.WriteLine($"ProcessId={value} not found;message={ex.Message}");
                 }
-
+                ProcessManager.ProcessIdDic.Remove(item, out int vale);
                 _logger.LogWarning($"ffmpeg process has been killed;processId={value};hashRtsp={item}");
             }
         }
     }
 }
-
-/// <summary>
-/// 需在startup中注册services.AddHostedService<TimedHostedService>();
-/// </summary>
-public class TimedHostedService : BackgroundService
-{
-    private readonly PeriodicTimer _timer;
-    private readonly ISRSRemoting _sRSRemoting;
-    private readonly ILogger<TimedHostedService> _logger;
-    private readonly IConfiguration _configuration;
-
-    public TimedHostedService(
-        ILogger<TimedHostedService> logger,
-        ISRSRemoting sRSRemoting,
-        IConfiguration configuration)
-    {
-        _logger = logger;
-        _sRSRemoting = sRSRemoting;
-        _configuration = configuration;
-        _timer = new PeriodicTimer(TimeSpan.FromMinutes(_configuration.GetValue<int>("IdleDuration", 10)));
-    }
-
-    protected override async Task ExecuteAsync(CancellationToken stoppingToken)
-    {
-        await Task.Yield();
-        _logger.LogInformation(
-            $"Queued Hosted Service is running.{Environment.NewLine}" +
-            $"{Environment.NewLine}Tap W to add a work item to the " +
-            $"background queue.{Environment.NewLine}");
-
-        while (await _timer.WaitForNextTickAsync(stoppingToken))
-        {
-            try
-            {
-                var streams = await _sRSRemoting.GetStreamsBySRSAsync();
-                var onlyPushClients = streams.Streams.Where(s => s.Clients < 2).Select(s => s.Name).ToList();
-
-                var hashRtspKey = onlyPushClients.Select(name =>
-                {
-                    var index = name.LastIndexOf('/');
-                    return name.Substring(index + 1, name.Length - index - 1);
-                });
-
-                foreach (var item in hashRtspKey)
-                {
-                    if (ProcessManager.ProcessIdDic.TryGetValue(item, out int value))
-                    {
-                        try
-                        {
-                            var process = Process.GetProcessById(value);
-                            process.Kill();
-                            process.WaitForExit();
-                            process.Dispose();
-                        }
-                        catch (Exception)
-                        {
-                            Console.WriteLine($"ProcessId={value} not found");
-                        }
-                        ProcessManager.ProcessIdDic.Remove(item, out int vale);
-                    }
-                }
-                Console.WriteLine($"【定时任务被触发】Tick {DateTime.Now}");
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Execute exception");
-            }
-            finally
-            {
-                _logger.LogInformation("Execute finished");
-            }
-        }
-        //while (!stoppingToken.IsCancellationRequested)
-    }
-
-    public override async Task StopAsync(CancellationToken stoppingToken)
-    {
-        _logger.LogInformation("Queued Hosted Service is stopping.");
-
-        await base.StopAsync(stoppingToken);
-    }
-}
-
 public static class ProcessManager
 {
     /// <summary>
