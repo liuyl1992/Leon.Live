@@ -10,8 +10,17 @@
 				"WriteIndented": false
 			}
 		},
-		"ISRSRemoting": { //接口定义,与代码interface一致
-			"HttpHost": "http://192.168.100.187:1985",//SRS RESTfulPort default is 1985
+		"ISRSRemoting": { 
+			"HttpHost": "http://192.168.100.187:1985", //SRS RESTfulPort default is 1985
+			"UseParameterPropertyValidate": false,
+			"UseReturnValuePropertyValidate": false,
+			"JsonSerializeOptions": {
+				"IgnoreNullValues": true,
+				"WriteIndented": false
+			}
+		},
+		"IZLMediaKitRemoting": { 
+			"HttpHost": "http://192.168.100.187:8082",
 			"UseParameterPropertyValidate": false,
 			"UseReturnValuePropertyValidate": false,
 			"JsonSerializeOptions": {

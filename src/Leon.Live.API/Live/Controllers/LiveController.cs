@@ -2,6 +2,7 @@
 using System.Net;
 using System.Threading;
 using System.Linq;
+using System.Diagnostics;
 
 namespace Leon.Live.API.Examples.Controllers
 {
@@ -14,6 +15,7 @@ namespace Leon.Live.API.Examples.Controllers
         private readonly ILiveRemoting _liveProxy;
         private readonly ISRSRemoting _sRSRemoting;
         private readonly ILiveService _liveService;
+        private readonly IZLMediaKitRemoting _zLMediaKitRemoting;
         private readonly IOnvifService _onvifService;
 
         public LiveController(IHostEnvironment hostEnvironment,
@@ -21,6 +23,7 @@ namespace Leon.Live.API.Examples.Controllers
             ILiveRemoting liveProxy,
             ISRSRemoting sRSRemoting,
             ILiveService liveService,
+            IZLMediaKitRemoting zLMediaKitRemoting,
             IOnvifService onvifService
             )
         {
@@ -29,6 +32,7 @@ namespace Leon.Live.API.Examples.Controllers
             _liveProxy = liveProxy;
             _sRSRemoting = sRSRemoting;
             _liveService = liveService;
+            _zLMediaKitRemoting = zLMediaKitRemoting;
             _onvifService = onvifService;
         }
 
@@ -73,8 +77,8 @@ namespace Leon.Live.API.Examples.Controllers
         /// "hls": "http://192.168.56.56:8080/srs/live/E0F08248A3CBC3CA5D58F6C52E4DCC5E88CEC097D34FE81C8EFC7B60AC91DC06.m3u8?authtoken="
         /// }
         /// </returns>
-        [HttpGet("video/StrPlay")]
-        public async Task<IActionResult> GetStrViewRtmp(string strRtsp, string group = "default", string authToken = "")
+        [HttpGet("video/srs/StrPlay")]
+        public async Task<IActionResult> GetStrViewRtmpBySRS(string strRtsp, string group = "default", string authToken = "")
         {
             //TODO
             var streams = await _sRSRemoting.GetStreamsBySRSAsync();
@@ -101,6 +105,20 @@ namespace Leon.Live.API.Examples.Controllers
             //streams.Streams.Where(s=>s.Name==hashRtsp).FirstOrDefault()?
             _liveService.GetStrViewRtmp(strRtsp, out string outrtmpLink, out string outFlvLink, out string outHlsLink, group, authToken);
             return Ok(new { Rtmp = outrtmpLink, Flv = outFlvLink, Hls = outHlsLink });
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="strRtsp"></param>
+        /// <param name="group"></param>
+        /// <param name="authToken"></param>
+        /// <returns></returns>
+        [HttpGet("video/ZLMediaKit/StrPlay")]
+        public async Task<IActionResult> AddStreamPusherProxyAsync(string strRtsp, string group = "default", string authToken = "")
+        {
+            await _zLMediaKitRemoting.AddStreamProxyAsync(secret: "035c73f7-bb6b-4889-a715-d9eb2d1925cc", schema: "rtsp",vhost:$"{Process.GetCurrentProcess().MachineName}", app: $"ZLMediaKit/{group}/live", stream: "streamId", dst_url: $"{strRtsp}");
+            return Ok();
         }
     }
 }
