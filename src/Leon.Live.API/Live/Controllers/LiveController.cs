@@ -97,6 +97,7 @@ namespace Leon.Live.API.Examples.Controllers
             var convertLink = _liveService.ConvertLinkPath(hashRtsp, group);
             if (hashRtspKey.Where(s => s == hashRtsp).Any())
             {
+                _logger.LogDebug($"An existing flow was found;strRtsp={strRtsp}");
                 return Ok(new
                 {
                     Rtmp = $"{convertLink.OutrtmpLink}?token={token}",
@@ -105,7 +106,6 @@ namespace Leon.Live.API.Examples.Controllers
                 });
             }
 
-            //streams.Streams.Where(s=>s.Name==hashRtsp).FirstOrDefault()?
             _liveService.GetStrViewRtmp(strRtsp, out string outrtmpLink, out string outFlvLink, out string outHlsLink, group, token);
             return Ok(new { Rtmp = outrtmpLink, Flv = outFlvLink, Hls = outHlsLink });
         }

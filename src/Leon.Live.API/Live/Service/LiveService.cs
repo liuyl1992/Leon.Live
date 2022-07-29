@@ -97,6 +97,7 @@ namespace Leon.Live.API
 
             var task = Task.Factory.StartNew(() =>
              {
+                 _logger.LogDebug("Has entered the task block ");
                  try
                  {
                      System.Diagnostics.Process process = new System.Diagnostics.Process();
@@ -108,7 +109,7 @@ namespace Leon.Live.API
                      var argumentLast = _configuration.GetValue<string>("ffmpeg:ArgumentLast", "");
 
                      var arguments = $"""{argumentFirst} -i "{strRtsp}" {argumentSecond} -f flv rtmp://{_rtmpPushAdr}/{argumentLast}""";
-                     _logger.LogInformation($"[GetStrViewRtmp] ffmpeg command= {arguments}");
+                     _logger.LogDebug($"[GetStrViewRtmp] ffmpeg command= {arguments}");
                      process.StartInfo.Arguments = arguments;//reference http://www.wisestudy.cn/opentech/FFmpeg_send_streaming_media.html
                      process.StartInfo.UseShellExecute = false;
                      process.StartInfo.RedirectStandardInput = true;
@@ -117,7 +118,7 @@ namespace Leon.Live.API
                      process.StartInfo.CreateNoWindow = false;
                      process.Start();
                      ProcessManager.ProcessIdDic.TryAdd(hashRtsp, process.Id);
-                     _logger.LogInformation($"[GetStrViewRtmp] rtsp={hashRtsp}--hashRtsp={hashRtsp}");
+                     _logger.LogDebug($"[GetStrViewRtmp] rtsp={hashRtsp}--hashRtsp={hashRtsp}");
                      Console.WriteLine($"{process.Id}");
 
                      process.BeginOutputReadLine();
@@ -130,10 +131,6 @@ namespace Leon.Live.API
 
                      process.ErrorDataReceived += (ss, ee) =>
                       {
-                          if (ee.Data?.Contains("Cannot open connection") ?? false)
-                          {
-                              _logger.LogError($"Cannot open connection");
-                          }
                           _logger.LogDebug($"Er:{ee.Data}");
                       };
 
@@ -141,16 +138,17 @@ namespace Leon.Live.API
                      process.WaitForExit();
                      if (!process.HasExited)
                      {
+                         _logger.LogDebug($" process has killed;processId={process?.Id}");
                          process.Kill();
                      }
 
                      //close process
                      process.Dispose();
-                     _logger.LogWarning("EXIT!");
+                     _logger.LogWarning($"EXIT!  processId={process?.Id}");
                  }
                  catch (Exception ex)
                  {
-                     Console.WriteLine(ex.Message);
+                     _logger.LogError(ex,$"{ex.Message}");
                      throw;
                  }
              });//, TaskCreationOptions.LongRunning

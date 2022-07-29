@@ -31,6 +31,7 @@
 		<!--按需加载serilog 插件-->
 		<PackageReference Include="NetPro.Serilog" Version="6.0.15" />
 		<PackageReference Include="Serilog.Sinks.Async" Version="1.5.0" />
+		<PackageReference Include="Serilog.Sinks.ElasticSearch" Version="8.4.1" />
 		<PackageReference Include="WebApiClientCore" Version="2.0.2" />
 	</ItemGroup>
 
