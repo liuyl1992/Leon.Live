@@ -114,7 +114,7 @@ namespace Leon.Live.API
                      process.StartInfo.RedirectStandardInput = true;
                      process.StartInfo.RedirectStandardOutput = true;
                      process.StartInfo.RedirectStandardError = true;
-                     process.StartInfo.CreateNoWindow = false;//false:主进程停止，不影响Process的运行，日志继续打印
+                     process.StartInfo.CreateNoWindow = false;
                      process.Start();
                      ProcessManager.ProcessIdDic.TryAdd(hashRtsp, process.Id);
                      _logger.LogInformation($"[GetStrViewRtmp] rtsp={hashRtsp}--hashRtsp={hashRtsp}");
