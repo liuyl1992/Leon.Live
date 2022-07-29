@@ -2,7 +2,7 @@
   "ffmpeg": {
     "Path": "ffmpeg", //default ffmpeg //E:/ffmpeg-gpl-shared/bin/ffmpeg.exe
     "ArgumentFirst": " -r 5 ", //-r 5 -re
-    "ArgumentSecond": " -vcodec copy ", // -vcodec copy 
+    "ArgumentSecond": " -c copy ", // -vcodec copy 
     "ArgumentLast": ""
   }
 }
