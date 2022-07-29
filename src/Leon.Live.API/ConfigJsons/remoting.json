@@ -10,8 +10,8 @@
 				"WriteIndented": false
 			}
 		},
-		"ISRSRemoting": { 
-			"HttpHost": "http://192.168.100.187:1985", //SRS RESTfulPort default is 1985
+		"ISRSRemoting": {
+			"HttpHost": "http://192.168.100.175:1986", //SRS RESTfulPort default is 1985
 			"UseParameterPropertyValidate": false,
 			"UseReturnValuePropertyValidate": false,
 			"JsonSerializeOptions": {

@@ -97,7 +97,7 @@ namespace Leon.Live.API
 
             var task = Task.Factory.StartNew(() =>
             {
-                var traceId = Guid.NewGuid().ToString("x");
+                var traceId = Guid.NewGuid().ToString();
                 _logger.LogDebug($"traceId={traceId} [1]Has entered the task block ");
                 try
                 {
@@ -153,6 +153,10 @@ namespace Leon.Live.API
                     _logger.LogError(ex, $"{ex.Message}");
                     throw;
                 }
+                finally
+                {
+                    ProcessManager.ProcessIdDic.Remove(hashRtsp, out int vale);
+                }
             }, TaskCreationOptions.LongRunning);
             task.ContinueWith(failedTask =>
             {
@@ -176,7 +180,7 @@ namespace Leon.Live.API
             string outPutPath = $"{serverType}/{group}/live/{hashRtsp}";//{Guid.NewGuid();
             if (string.IsNullOrWhiteSpace(group))
             {
-                outPutPath = $"{serverType}/default/live/{hashRtsp}";//{Guid.NewGuid()
+                outPutPath = $"{serverType}/default/live/{hashRtsp}";
             }
 
             var pushPort = _configuration.GetValue<int>("SRS:PushPort");

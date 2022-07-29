@@ -1,8 +1,8 @@
 {
   "IdleDuration": 10, // Units of minutes
   "SRS": {
-    "PushServer": "192.168.100.187",
-    "PushPort": 1935,
-    "HttpPort": 8080
+    "PushServer": "192.168.100.175",
+    "PushPort": 1936,
+    "HttpPort": 8081
   }
 }
