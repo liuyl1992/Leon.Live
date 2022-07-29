@@ -121,7 +121,7 @@ namespace Leon.Live.API.Examples.Controllers
         public async Task<IActionResult> AddStreamPusherProxyAsync(string strRtsp, string group = "default", string token = "")
         {
             var result = await _zLMediaKitRemoting.AddStreamProxyAsync(secret: "035c73f7-bb6b-4889-a715-d9eb2d1925cc",
-                 vhost: "__defaultVhost__",//$"{Process.GetCurrentProcess().ProcessName.Replace(".","")}",
+                 vhost: "__defaultVhost__",
                  app: $"ZLMediaKit/{group}/live",
                  stream: $"{EncryptHelper.Sha256(strRtsp + group)}",
                  url: strRtsp,

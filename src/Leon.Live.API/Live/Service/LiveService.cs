@@ -107,7 +107,7 @@ namespace Leon.Live.API
                      var argumentSecond = _configuration.GetValue<string>("ffmpeg:ArgumentSecond", " -vcodec copy ");
                      var argumentLast = _configuration.GetValue<string>("ffmpeg:ArgumentLast", "");
 
-                     var arguments = $"""{argumentFirst} -i "{strRtsp}" {argumentSecond} -f flv rtmp://{_rtmpPushAdr}{argumentLast}""";
+                     var arguments = $"""{argumentFirst} -i "{strRtsp}" {argumentSecond} -f flv rtmp://{_rtmpPushAdr}/{argumentLast}""";
                      _logger.LogInformation($"[GetStrViewRtmp] ffmpeg command= {arguments}");
                      process.StartInfo.Arguments = arguments;//reference http://www.wisestudy.cn/opentech/FFmpeg_send_streaming_media.html
                      process.StartInfo.UseShellExecute = false;
@@ -179,7 +179,8 @@ namespace Leon.Live.API
                 outPutPath = $"{serverType}/default/live/{hashRtsp}";//{Guid.NewGuid()
             }
 
-            var _rtmpPushAdr = $"{mediaPushAddr}/{outPutPath}";
+            var pushPort = _configuration.GetValue<int>("SRS:PushPort");
+            var _rtmpPushAdr = $"{mediaPushAddr}:{pushPort}/{outPutPath}";
             var outrtmpLink = $"rtmp://{_rtmpPushAdr}";
             var outFlvLink = $"http://{mediaPushAddr}:{httpPort}/{outPutPath}.flv";
             var outHlsLink = $"http://{mediaPushAddr}:{httpPort}/{outPutPath}.m3u8";
