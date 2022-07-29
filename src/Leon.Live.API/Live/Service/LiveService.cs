@@ -93,65 +93,67 @@ namespace Leon.Live.API
             outFlvLink = $"{convertLink.OutFlvLink}?token={token}";
             outHlsLink = $"{convertLink.OutHlsLink}?token={token}";
 
-            _logger.LogInformation($"[push stream address] --> {outrtmpLink}");
+            _logger.LogInformation($"[push stream address] --> {_rtmpPushAdr}");
 
             var task = Task.Factory.StartNew(() =>
-             {
-                 _logger.LogDebug("Has entered the task block ");
-                 try
-                 {
-                     System.Diagnostics.Process process = new System.Diagnostics.Process();
-                     process.StartInfo.WindowStyle = System.Diagnostics.ProcessWindowStyle.Hidden;
-                     process.StartInfo.FileName = _configuration.GetValue<string>("ffmpeg:Path", "ffmpeg");
+            {
+                var traceId = Guid.NewGuid().ToString("x");
+                _logger.LogDebug($"traceId={traceId} [1]Has entered the task block ");
+                try
+                {
+                    System.Diagnostics.Process process = new System.Diagnostics.Process();
+                    process.StartInfo.WindowStyle = System.Diagnostics.ProcessWindowStyle.Hidden;
+                    process.StartInfo.FileName = _configuration.GetValue<string>("ffmpeg:Path", "ffmpeg");
 
-                     var argumentFirst = _configuration.GetValue<string>("ffmpeg:ArgumentFirst", " -r 5 ");
-                     var argumentSecond = _configuration.GetValue<string>("ffmpeg:ArgumentSecond", " -vcodec copy ");
-                     var argumentLast = _configuration.GetValue<string>("ffmpeg:ArgumentLast", "");
+                    var argumentFirst = _configuration.GetValue<string>("ffmpeg:ArgumentFirst", " -r 5 ");
+                    var argumentSecond = _configuration.GetValue<string>("ffmpeg:ArgumentSecond", " -vcodec copy ");
+                    var argumentLast = _configuration.GetValue<string>("ffmpeg:ArgumentLast", "");
 
-                     var arguments = $"""{argumentFirst} -i "{strRtsp}" {argumentSecond} -f flv rtmp://{_rtmpPushAdr}/{argumentLast}""";
-                     _logger.LogDebug($"[GetStrViewRtmp] ffmpeg command= {arguments}");
-                     process.StartInfo.Arguments = arguments;//reference http://www.wisestudy.cn/opentech/FFmpeg_send_streaming_media.html
-                     process.StartInfo.UseShellExecute = false;
-                     process.StartInfo.RedirectStandardInput = true;
-                     process.StartInfo.RedirectStandardOutput = true;
-                     process.StartInfo.RedirectStandardError = true;
-                     process.StartInfo.CreateNoWindow = false;
-                     process.Start();
-                     ProcessManager.ProcessIdDic.TryAdd(hashRtsp, process.Id);
-                     _logger.LogDebug($"[GetStrViewRtmp] rtsp={hashRtsp}--hashRtsp={hashRtsp}");
-                     Console.WriteLine($"{process.Id}");
+                    var arguments = $"""{argumentFirst} -i "{strRtsp}" {argumentSecond} -f flv rtmp://{_rtmpPushAdr}/{argumentLast}""";
+                    _logger.LogDebug($"traceId={traceId} [2][GetStrViewRtmp] ffmpeg command={process.StartInfo.FileName} {arguments}");
+                    process.StartInfo.Arguments = arguments;//reference http://www.wisestudy.cn/opentech/FFmpeg_send_streaming_media.html
+                    process.StartInfo.UseShellExecute = false;
+                    process.StartInfo.RedirectStandardInput = true;
+                    process.StartInfo.RedirectStandardOutput = true;
+                    process.StartInfo.RedirectStandardError = true;
+                    process.StartInfo.CreateNoWindow = false;
+                    process.Start();
 
-                     process.BeginOutputReadLine();
-                     process.BeginErrorReadLine();
+                    ProcessManager.ProcessIdDic.TryAdd(hashRtsp, process.Id);
+                    _logger.LogDebug($"traceId={traceId} [3] has been registered processId;Current ProcessManager.ProcessIdDic object count={ProcessManager.ProcessIdDic.Count} rtsp={hashRtsp}--hashRtsp={hashRtsp}");
+                    Console.WriteLine($"{process.Id}");
 
-                     process.OutputDataReceived += (ss, ee) =>
-                      {
-                          _logger.LogDebug($"Std:{ee.Data}");
-                      };
+                    process.BeginOutputReadLine();
+                    process.BeginErrorReadLine();
 
-                     process.ErrorDataReceived += (ss, ee) =>
-                      {
-                          _logger.LogDebug($"Er:{ee.Data}");
-                      };
-
-                     //wait exit
-                     process.WaitForExit();
-                     if (!process.HasExited)
+                    process.OutputDataReceived += (ss, ee) =>
                      {
-                         _logger.LogDebug($" process has killed;processId={process?.Id}");
-                         process.Kill();
-                     }
+                         _logger.LogDebug($"Std:{ee.Data}");
+                     };
 
-                     //close process
-                     process.Dispose();
-                     _logger.LogWarning($"EXIT!  processId={process?.Id}");
-                 }
-                 catch (Exception ex)
-                 {
-                     _logger.LogError(ex,$"{ex.Message}");
-                     throw;
-                 }
-             });//, TaskCreationOptions.LongRunning
+                    process.ErrorDataReceived += (ss, ee) =>
+                     {
+                         _logger.LogDebug($"Er:{ee.Data}");
+                     };
+
+                    //wait exit
+                    process.WaitForExit();
+                    if (!process.HasExited)
+                    {
+                        _logger.LogDebug($"traceId={traceId} [4] process has killed;processId={process?.Id}");
+                        process.Kill();
+                    }
+
+                    //close process
+                    process.Dispose();
+                    _logger.LogWarning($"traceId={traceId} [5]EXIT!  processId={process?.Id}");
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, $"{ex.Message}");
+                    throw;
+                }
+            }, TaskCreationOptions.LongRunning);
             task.ContinueWith(failedTask =>
             {
                 Console.WriteLine($"[Error] {failedTask?.Exception?.Message}");
