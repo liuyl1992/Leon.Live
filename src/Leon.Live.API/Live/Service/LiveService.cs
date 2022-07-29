@@ -13,7 +13,7 @@ namespace Leon.Live.API
     {
         Task<Stream> GetVideoAsync();
         Task GetRealTimeVideoAsync();
-        void GetStrViewRtmp(string strRtsp, out string outrtmpLink, out string outFlvLink, out string outHlsLink, string group = "", string authToken = "");
+        void GetStrViewRtmp(string strRtsp, out string outrtmpLink, out string outFlvLink, out string outHlsLink, string group = "", string token = "");
         (string OutrtmpLink, string OutFlvLink, string OutHlsLink, string RtmpPushAdr) ConvertLinkPath(string hashRtsp, string group = "default");
     }
 
@@ -57,7 +57,7 @@ namespace Leon.Live.API
 
             var cancellationTokenSource = new CancellationTokenSource();
 
-            var client = new VideoStreamClient("ffmpeg");
+            var client = new VideoStreamClient(_configuration.GetValue<string>("ffmpeg:Path", "ffmpeg"));
             client.NewImageReceived += NewImageReceived;
             var task = client.StartFrameReaderAsync(inputSource, OutputImageFormat.Bmp, cancellationTokenSource.Token);
 
@@ -81,17 +81,17 @@ namespace Leon.Live.API
         /// <param name="outFlvLink"></param>
         /// <param name="outHlsLink"></param>
         /// <param name="group">The RTSP address in the same group is unique</param>
-        /// <param name="authToken"></param>
-        public void GetStrViewRtmp(string strRtsp, out string outrtmpLink, out string outFlvLink, out string outHlsLink, string group = "default", string authToken = "")
+        /// <param name="token"></param>
+        public void GetStrViewRtmp(string strRtsp, out string outrtmpLink, out string outFlvLink, out string outHlsLink, string group = "default", string token = "")
         {
             string hashRtsp = EncryptHelper.Sha256(strRtsp + group);
 
             var convertLink = ConvertLinkPath(hashRtsp, group);
 
-            var _rtmpPushAdr = $"{convertLink.RtmpPushAdr}?authtoken={authToken}";
-            outrtmpLink = $"{convertLink.OutrtmpLink}?authtoken={authToken}";
-            outFlvLink = $"{convertLink.OutFlvLink}?authtoken={authToken}";
-            outHlsLink = $"{convertLink.OutHlsLink}?authtoken={authToken}";
+            var _rtmpPushAdr = $"{convertLink.RtmpPushAdr}?token={token}";
+            outrtmpLink = $"{convertLink.OutrtmpLink}?token={token}";
+            outFlvLink = $"{convertLink.OutFlvLink}?token={token}";
+            outHlsLink = $"{convertLink.OutHlsLink}?token={token}";
 
             _logger.LogInformation($"[push stream address] --> {outrtmpLink}");
 
@@ -101,7 +101,7 @@ namespace Leon.Live.API
                  {
                      System.Diagnostics.Process process = new System.Diagnostics.Process();
                      process.StartInfo.WindowStyle = System.Diagnostics.ProcessWindowStyle.Hidden;
-                     process.StartInfo.FileName = "ffmpeg";
+                     process.StartInfo.FileName = _configuration.GetValue<string>("ffmpeg:Path", "ffmpeg");
                      process.StartInfo.Arguments = $"""-i "{strRtsp}" -r 5 -c copy -f flv rtmp://{_rtmpPushAdr}""";
                      process.StartInfo.UseShellExecute = false;
                      process.StartInfo.RedirectStandardInput = true;
@@ -164,7 +164,7 @@ namespace Leon.Live.API
         public (string OutrtmpLink, string OutFlvLink, string OutHlsLink, string RtmpPushAdr) ConvertLinkPath(string hashRtsp, string group = "default")
         {
             var mediaPushAddr = _configuration.GetValue<string>("SRS:PushServer");//for example ：srs;rtsp simple server...
-            var httpPort = _configuration.GetValue<int>("SRS:HttpPort",8080);
+            var httpPort = _configuration.GetValue<int>("SRS:HttpPort", 8080);
             var serverType = "srs";
             string outPutPath = $"{serverType}/{group}/live/{hashRtsp}";//{Guid.NewGuid();
             if (string.IsNullOrWhiteSpace(group))

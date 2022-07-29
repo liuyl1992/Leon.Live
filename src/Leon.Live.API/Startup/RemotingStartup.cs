@@ -33,6 +33,10 @@ namespace Leon.Live.API
             var srsSection = configuration.GetSection($"Remoting:{nameof(ISRSRemoting)}");
 
             services.AddHttpApi<ISRSRemoting>().ConfigureHttpApi(srsSection);
+
+            var zLMediaKitSection = configuration.GetSection($"Remoting:{nameof(IZLMediaKitRemoting)}");
+
+            services.AddHttpApi<IZLMediaKitRemoting>().ConfigureHttpApi(zLMediaKitSection);
         }
 
         /// <summary>

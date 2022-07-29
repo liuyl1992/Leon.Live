@@ -17,6 +17,7 @@ namespace Leon.Live.API.Examples.Controllers
         private readonly ILiveService _liveService;
         private readonly IZLMediaKitRemoting _zLMediaKitRemoting;
         private readonly IOnvifService _onvifService;
+        private readonly IConfiguration _configuration;
 
         public LiveController(IHostEnvironment hostEnvironment,
             ILogger<LiveController> logger,
@@ -24,7 +25,8 @@ namespace Leon.Live.API.Examples.Controllers
             ISRSRemoting sRSRemoting,
             ILiveService liveService,
             IZLMediaKitRemoting zLMediaKitRemoting,
-            IOnvifService onvifService
+            IOnvifService onvifService,
+            IConfiguration configuration
             )
         {
             _hostEnvironment = hostEnvironment;
@@ -34,6 +36,7 @@ namespace Leon.Live.API.Examples.Controllers
             _liveService = liveService;
             _zLMediaKitRemoting = zLMediaKitRemoting;
             _onvifService = onvifService;
+            _configuration = configuration;
         }
 
         /// <summary>
@@ -69,16 +72,16 @@ namespace Leon.Live.API.Examples.Controllers
         /// </summary>
         /// <param name="strRtsp"></param>
         ///  <param name="group"></param>
-        /// <param name="authToken">auth token</param>
+        /// <param name="token">auth token</param>
         /// <returns>
         /// {
-        /// "rtmp": "rtmp://192.168.56.56/srs/live/E0F08248A3CBC3CA5D58F6C52E4DCC5E88CEC097D34FE81C8EFC7B60AC91DC06?authtoken=",
-        /// "flv": "http://192.168.56.56:8080/srs/live/E0F08248A3CBC3CA5D58F6C52E4DCC5E88CEC097D34FE81C8EFC7B60AC91DC06.flv?authtoken=",
-        /// "hls": "http://192.168.56.56:8080/srs/live/E0F08248A3CBC3CA5D58F6C52E4DCC5E88CEC097D34FE81C8EFC7B60AC91DC06.m3u8?authtoken="
+        /// "rtmp": "rtmp://192.168.56.56/srs/live/E0F08248A3CBC3CA5D58F6C52E4DCC5E88CEC097D34FE81C8EFC7B60AC91DC06?token=",
+        /// "flv": "http://192.168.56.56:8080/srs/live/E0F08248A3CBC3CA5D58F6C52E4DCC5E88CEC097D34FE81C8EFC7B60AC91DC06.flv?token=",
+        /// "hls": "http://192.168.56.56:8080/srs/live/E0F08248A3CBC3CA5D58F6C52E4DCC5E88CEC097D34FE81C8EFC7B60AC91DC06.m3u8?token="
         /// }
         /// </returns>
         [HttpGet("video/srs/StrPlay")]
-        public async Task<IActionResult> GetStrViewRtmpBySRS(string strRtsp, string group = "default", string authToken = "")
+        public async Task<IActionResult> GetStrViewRtmpBySRS(string strRtsp, string group = "default", string token = "")
         {
             //TODO
             var streams = await _sRSRemoting.GetStreamsBySRSAsync();
@@ -96,14 +99,14 @@ namespace Leon.Live.API.Examples.Controllers
             {
                 return Ok(new
                 {
-                    Rtmp = $"{convertLink.OutrtmpLink}?authtoken={authToken}",
-                    Flv = $"{convertLink.OutFlvLink}?authtoken={authToken}",
-                    Hls = $"{convertLink.OutHlsLink}?authtoken={authToken}"
+                    Rtmp = $"{convertLink.OutrtmpLink}?token={token}",
+                    Flv = $"{convertLink.OutFlvLink}?token={token}",
+                    Hls = $"{convertLink.OutHlsLink}?token={token}"
                 });
             }
 
             //streams.Streams.Where(s=>s.Name==hashRtsp).FirstOrDefault()?
-            _liveService.GetStrViewRtmp(strRtsp, out string outrtmpLink, out string outFlvLink, out string outHlsLink, group, authToken);
+            _liveService.GetStrViewRtmp(strRtsp, out string outrtmpLink, out string outFlvLink, out string outHlsLink, group, token);
             return Ok(new { Rtmp = outrtmpLink, Flv = outFlvLink, Hls = outHlsLink });
         }
 
@@ -112,13 +115,33 @@ namespace Leon.Live.API.Examples.Controllers
         /// </summary>
         /// <param name="strRtsp"></param>
         /// <param name="group"></param>
-        /// <param name="authToken"></param>
+        /// <param name="token"></param>
         /// <returns></returns>
         [HttpGet("video/ZLMediaKit/StrPlay")]
-        public async Task<IActionResult> AddStreamPusherProxyAsync(string strRtsp, string group = "default", string authToken = "")
+        public async Task<IActionResult> AddStreamPusherProxyAsync(string strRtsp, string group = "default", string token = "")
         {
-            await _zLMediaKitRemoting.AddStreamProxyAsync(secret: "035c73f7-bb6b-4889-a715-d9eb2d1925cc", schema: "rtsp",vhost:$"{Process.GetCurrentProcess().MachineName}", app: $"ZLMediaKit/{group}/live", stream: "streamId", dst_url: $"{strRtsp}");
-            return Ok();
+            var result = await _zLMediaKitRemoting.AddStreamProxyAsync(secret: "035c73f7-bb6b-4889-a715-d9eb2d1925cc",
+                 vhost: "__defaultVhost__",//$"{Process.GetCurrentProcess().ProcessName.Replace(".","")}",
+                 app: $"ZLMediaKit/{group}/live",
+                 stream: $"{EncryptHelper.Sha256(strRtsp + group)}",
+                 url: strRtsp,
+                 enable_hls: true,
+                 enable_rtmp: true,
+                 enable_audio: false
+                 );
+
+            // reference: url rule https://github.com/ZLMediaKit/ZLMediaKit/wiki/%E6%92%AD%E6%94%BEurl%E8%A7%84%E5%88%99
+
+            var httpHost = _configuration.GetValue<string>("Remoting:IZLMediaKitRemoting:HttpHost");
+            var index = result.Data.Key.IndexOf('/');
+            var vhost = result.Data.Key.Substring(0, index - 1);
+            var path = result.Data.Key.Substring(index + 1, result.Data.Key.Length - index - 1);
+            return Ok(new
+            {
+                Rtmp = $"rtmp://{new Uri(httpHost).Host}/{path}?vhost={vhost}&token={token}",
+                Flv = $"{httpHost}/{path}.live.flv?vhost={vhost}&token={token}",
+                Hls = $"{httpHost}/{path}/hls.m3u8?vhost={vhost}&token={token}"
+            });
         }
     }
 }

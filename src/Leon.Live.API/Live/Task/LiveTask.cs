@@ -20,7 +20,7 @@ namespace Leon.Live.API
 
             var rtspcancellationTokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(5));
 
-            var rtspclient = new VideoStreamClient(_configuration.GetValue<string>("ffmpeg:Path"));
+            var rtspclient = new VideoStreamClient(_configuration.GetValue<string>("ffmpeg:Path", "ffmpeg"));
             rtspclient.NewImageReceived += RTSPNewImageReceived;
             var rtsptask = rtspclient.StartFrameReaderAsync(rtspinputSource, OutputImageFormat.Bmp, rtspcancellationTokenSource.Token);
             rtspclient.NewImageReceived -= RTSPNewImageReceived;

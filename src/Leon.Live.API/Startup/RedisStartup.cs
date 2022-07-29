@@ -27,7 +27,6 @@ namespace Leon.Live.API
             redisClient.Deserialize = (json, type) => JsonConvert.DeserializeObject(json, type);
             services.AddMemoryCache();
             services.TryAddSingleton(redisClient);
-
         }
 
         /// <summary>
