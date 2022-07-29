@@ -102,7 +102,14 @@ namespace Leon.Live.API
                      System.Diagnostics.Process process = new System.Diagnostics.Process();
                      process.StartInfo.WindowStyle = System.Diagnostics.ProcessWindowStyle.Hidden;
                      process.StartInfo.FileName = _configuration.GetValue<string>("ffmpeg:Path", "ffmpeg");
-                     process.StartInfo.Arguments = $"""-i "{strRtsp}" -r 5 -c copy -f flv rtmp://{_rtmpPushAdr}""";
+
+                     var argumentFirst = _configuration.GetValue<string>("ffmpeg:ArgumentFirst", " -r 5 ");
+                     var argumentSecond = _configuration.GetValue<string>("ffmpeg:ArgumentSecond", " -vcodec copy ");
+                     var argumentLast = _configuration.GetValue<string>("ffmpeg:ArgumentLast", "");
+
+                     var arguments = $"""{argumentFirst} -i "{strRtsp}" {argumentSecond} -f flv rtmp://{_rtmpPushAdr}{argumentLast}""";
+                     _logger.LogInformation($"[GetStrViewRtmp] ffmpeg command= {arguments}");
+                     process.StartInfo.Arguments = arguments;//reference http://www.wisestudy.cn/opentech/FFmpeg_send_streaming_media.html
                      process.StartInfo.UseShellExecute = false;
                      process.StartInfo.RedirectStandardInput = true;
                      process.StartInfo.RedirectStandardOutput = true;
