@@ -158,11 +158,11 @@ namespace Leon.Live.API
                     ProcessManager.ProcessIdDic.Remove(hashRtsp, out int vale);
                 }
             }, TaskCreationOptions.LongRunning);
-            task.ContinueWith(failedTask =>
-            {
-                Console.WriteLine($"[Error] {failedTask?.Exception?.Message}");
-            },
-            TaskContinuationOptions.OnlyOnFaulted);
+            //task.ContinueWith(failedTask =>
+            //{
+            //    _logger.LogError(failedTask?.Exception,$"{failedTask?.Exception?.Message}");
+            //},
+            //TaskContinuationOptions.OnlyOnFaulted);
         }
 
 

@@ -58,7 +58,6 @@ public class TimerjobStartTask : IStartupTaskAsync
             {
                 try
                 {
-                    ProcessManager.ProcessIdDic.Remove(item, out int vale);
                     var process = Process.GetProcessById(value);
                     process.Kill();
                     process.WaitForExit();
@@ -67,6 +66,10 @@ public class TimerjobStartTask : IStartupTaskAsync
                 catch (Exception ex)
                 {
                     Console.WriteLine($"ProcessId={value} not found;message={ex.Message}");
+                }
+                finally
+                {
+                    ProcessManager.ProcessIdDic.Remove(item, out int vale);
                 }
 
                 _logger.LogWarning($"ffmpeg process has been killed;processId={value};hashRtsp={item}");
