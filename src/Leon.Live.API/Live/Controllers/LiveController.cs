@@ -85,7 +85,7 @@ namespace Leon.Live.API.Examples.Controllers
         {
             //TODO
             var streams = await _sRSRemoting.GetStreamsBySRSAsync();
-            var onlyPushClients = streams.Streams.Where(s => s.Clients > 0).Select(s => s.Name).ToList();
+            var onlyPushClients = streams.Streams.Where(s => s.Clients > 0 && s.Video != null && s.Publish.Active == true).Select(s => s.Name).ToList();
 
             var hashRtspKey = onlyPushClients.Select(name =>
             {

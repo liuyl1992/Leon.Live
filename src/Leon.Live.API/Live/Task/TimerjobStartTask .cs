@@ -43,7 +43,7 @@ public class TimerjobStartTask : IStartupTaskAsync
     private async Task CheckInactiveStreams()
     {
         var streams = await _sRSRemoting.GetStreamsBySRSAsync();
-        var onlyPushClients = streams.Streams.Where(s => s.Clients < 2).Select(s => s.Name).ToList();//Less than 2 means only push stream client
+        var onlyPushClients = streams.Streams.Where(s => s.Clients < 2 || s.Video == null).Select(s => s.Name).ToList();//Less than 2 means only push stream client
 
         var hashRtspKey = onlyPushClients.Select(name =>
         {
@@ -59,13 +59,16 @@ public class TimerjobStartTask : IStartupTaskAsync
                 try
                 {
                     var process = Process.GetProcessById(value);
-                    process.Kill();
-                    process.WaitForExit();
-                    process.Dispose();
+                    if (process.StartInfo.UserName == item)
+                    {
+                        process.Kill();
+                        process.WaitForExit();
+                        process.Dispose();
+                    }
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine($"ProcessId={value} not found;message={ex.Message}");
+                    _logger.LogError(ex, $"ProcessId={value} not found;message={ex.Message}");
                 }
                 finally
                 {

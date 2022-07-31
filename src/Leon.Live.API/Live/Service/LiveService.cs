@@ -99,9 +99,10 @@ namespace Leon.Live.API
             {
                 var traceId = Guid.NewGuid().ToString();
                 _logger.LogDebug($"traceId={traceId} [1]Has entered the task block ");
+                System.Diagnostics.Process process = new System.Diagnostics.Process();
                 try
                 {
-                    System.Diagnostics.Process process = new System.Diagnostics.Process();
+                    process.StartInfo.UserName = hashRtsp;
                     process.StartInfo.WindowStyle = System.Diagnostics.ProcessWindowStyle.Hidden;
                     process.StartInfo.FileName = _configuration.GetValue<string>("ffmpeg:Path", "ffmpeg");
 
@@ -121,7 +122,7 @@ namespace Leon.Live.API
 
                     ProcessManager.ProcessIdDic.TryAdd(hashRtsp, process.Id);
                     _logger.LogDebug($"traceId={traceId} [3] has been registered processId;Current ProcessManager.ProcessIdDic object count={ProcessManager.ProcessIdDic.Count} rtsp={hashRtsp}--hashRtsp={hashRtsp}");
-                    Console.WriteLine($"{process.Id}");
+                    Console.WriteLine($"process.Id={process.Id}; process.MachineName={process.MachineName}");
 
                     process.BeginOutputReadLine();
                     process.BeginErrorReadLine();
@@ -155,6 +156,7 @@ namespace Leon.Live.API
                 }
                 finally
                 {
+                    process.Dispose();
                     ProcessManager.ProcessIdDic.Remove(hashRtsp, out int vale);
                 }
             }, TaskCreationOptions.LongRunning);
