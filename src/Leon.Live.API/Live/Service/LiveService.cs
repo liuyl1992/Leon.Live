@@ -17,7 +17,7 @@ namespace Leon.Live.API
         (string OutrtmpLink, string OutFlvLink, string OutHlsLink, string RtmpPushAdr) ConvertLinkPath(string hashRtsp, string group = "default");
     }
 
-    public class LiveService : ILiveService, ISingletonDependency
+    public class LiveService : ILiveService, IScopedDependency
     {
         private static List<int> TaskIdList = new List<int>();
         private IHttpClientFactory _client;
