@@ -20,13 +20,14 @@ namespace Leon.Live.API
     public class LiveService : ILiveService, ISingletonDependency
     {
         private static List<int> TaskIdList = new List<int>();
-        private HttpClient _client;
+        private IHttpClientFactory _client;
         private readonly ISRSRemoting _sRSRemoting;
         private readonly RedisClient _redisClient;
         private readonly IConfiguration _configuration;
         private readonly ILogger _logger;
 
         public LiveService(
+            IHttpClientFactory client,
             ISRSRemoting sRSRemoting
             , IConfiguration configuration
             , RedisClient redisClient
@@ -35,15 +36,14 @@ namespace Leon.Live.API
             _sRSRemoting = sRSRemoting;
             _configuration = configuration;
             _redisClient = redisClient;
-            _client = new HttpClient();
+            _client = client;
             _logger = logger;
         }
 
         public async Task<Stream> GetVideoAsync()
         {
             var urlBlob = "https://anthonygiretti.blob.core.windows.net/videos/earth.mp4";
-
-            return await _client.GetStreamAsync(urlBlob);
+            return await _client.CreateClient().GetStreamAsync(urlBlob);
         }
 
         /// <summary>
@@ -189,11 +189,6 @@ namespace Leon.Live.API
             var outFlvLink = $"http://{mediaPushAddr}:{httpPort}/{outPutPath}.flv";
             var outHlsLink = $"http://{mediaPushAddr}:{httpPort}/{outPutPath}.m3u8";
             return (outrtmpLink, outFlvLink, outHlsLink, _rtmpPushAdr);
-        }
-        ~LiveService()
-        {
-            if (_client != null)
-                _client.Dispose();
         }
     }
 }

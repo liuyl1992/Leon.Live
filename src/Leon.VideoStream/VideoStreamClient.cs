@@ -17,10 +17,10 @@ namespace Leon.VideoStream
 
         public VideoStreamClient(string ffmpegPath = "ffmpeg.exe")
         {
-            if (!File.Exists(ffmpegPath))
-            {
-                throw new FileNotFoundException("Cannot found ffmpeg", ffmpegPath);
-            }
+            //if (!File.Exists(ffmpegPath))
+            //{
+            //    throw new FileNotFoundException("Cannot found ffmpeg", ffmpegPath);
+            //}
 
             this._ffmpegPath = ffmpegPath;
         }
