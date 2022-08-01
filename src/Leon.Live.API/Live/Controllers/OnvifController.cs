@@ -1,6 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.Net;
-using System.Threading;
 
 namespace Leon.Live.API.Examples.Controllers
 {

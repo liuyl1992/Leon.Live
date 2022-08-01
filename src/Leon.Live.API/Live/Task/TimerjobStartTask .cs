@@ -1,20 +1,24 @@
 ﻿using Leon.Live.API;
-using System.Threading;
-using System.Linq;
-using System.Collections.Generic;
+using Microsoft.Extensions.Caching.Memory;
 using System.Diagnostics;
-using System.Collections.Concurrent;
+using System.Linq;
+using System.Threading;
 
 public class TimerjobStartTask : IStartupTaskAsync
 {
     private readonly ILogger _logger;
     private readonly IConfiguration _configuration;
     private readonly ISRSRemoting _sRSRemoting;
-    public TimerjobStartTask(ILogger<TimerjobStartTask> logger, IConfiguration configuration, ISRSRemoting sRSRemoting)
+    private readonly IMemoryCache _memoryCache;
+    public TimerjobStartTask(ILogger<TimerjobStartTask> logger,
+        IConfiguration configuration,
+        ISRSRemoting sRSRemoting,
+       IMemoryCache memoryCache)
     {
         _logger = logger;
         _configuration = configuration;
         _sRSRemoting = sRSRemoting;
+        _memoryCache = memoryCache;
     }
     public int Order => 0;
 
@@ -54,36 +58,24 @@ public class TimerjobStartTask : IStartupTaskAsync
 
         foreach (var item in hashRtspKey)
         {
-            if (ProcessManager.ProcessIdDic.TryGetValue(item, out int value))//key is hash for rtsp,value is ffmpeg processId
+            //if (ProcessManager.ProcessIdDic.TryGetValue(item, out int value))//key is hash for rtsp,value is ffmpeg processId
+            if (_memoryCache.TryGetValue(item, out int value))
             {
                 try
                 {
+                    _memoryCache.Remove(item);
                     var process = Process.GetProcessById(value);
-                    if (process.StartInfo.UserName == item)
-                    {
-                        process.Kill();
-                        process.WaitForExit();
-                        process.Dispose();
-                    }
+                    process.Kill();
+                    process.WaitForExit();
+                    process.Dispose();
                 }
                 catch (Exception ex)
                 {
                     _logger.LogError(ex, $"ProcessId={value} not found;message={ex.Message}");
-                }
-                finally
-                {
-                    ProcessManager.ProcessIdDic.Remove(item, out int vale);
                 }
 
                 _logger.LogWarning($"ffmpeg process has been killed;processId={value};hashRtsp={item}");
             }
         }
     }
-}
-public static class ProcessManager
-{
-    /// <summary>
-    /// key is hash,value is processId
-    /// </summary>
-    public static ConcurrentDictionary<string, int> ProcessIdDic = new ConcurrentDictionary<string, int>();
 }

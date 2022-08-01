@@ -1,8 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Net;
-using System.Threading;
-using System.Linq;
-using System.Diagnostics;
+﻿using System.Linq;
 
 namespace Leon.Live.API.Examples.Controllers
 {

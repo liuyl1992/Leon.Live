@@ -1,10 +1,8 @@
-﻿using CliWrap;
-using Leon.VideoStream;
+﻿using Leon.VideoStream;
+using Microsoft.Extensions.Caching.Memory;
 using System.Collections.Generic;
 using System.IO;
 using System.Net.Http;
-using System.Security.Cryptography;
-using System.Text;
 using System.Threading;
 
 namespace Leon.Live.API
@@ -25,19 +23,22 @@ namespace Leon.Live.API
         private readonly RedisClient _redisClient;
         private readonly IConfiguration _configuration;
         private readonly ILogger _logger;
+        private readonly IMemoryCache _memoryCache;
 
         public LiveService(
             IHttpClientFactory client,
             ISRSRemoting sRSRemoting
             , IConfiguration configuration
             , RedisClient redisClient
-            , ILogger<LiveService> logger)
+            , ILogger<LiveService> logger,
+            IMemoryCache memoryCache)
         {
             _sRSRemoting = sRSRemoting;
             _configuration = configuration;
             _redisClient = redisClient;
             _client = client;
             _logger = logger;
+            _memoryCache = memoryCache;
         }
 
         public async Task<Stream> GetVideoAsync()
@@ -102,7 +103,7 @@ namespace Leon.Live.API
                 System.Diagnostics.Process process = new System.Diagnostics.Process();
                 try
                 {
-                    process.StartInfo.UserName = hashRtsp;
+                    //process.StartInfo.UserName = hashRtsp;
                     process.StartInfo.WindowStyle = System.Diagnostics.ProcessWindowStyle.Hidden;
                     process.StartInfo.FileName = _configuration.GetValue<string>("ffmpeg:Path", "ffmpeg");
 
@@ -120,8 +121,9 @@ namespace Leon.Live.API
                     process.StartInfo.CreateNoWindow = false;
                     process.Start();
 
-                    ProcessManager.ProcessIdDic.TryAdd(hashRtsp, process.Id);
-                    _logger.LogDebug($"traceId={traceId} [3] has been registered processId;Current ProcessManager.ProcessIdDic object count={ProcessManager.ProcessIdDic.Count} rtsp={hashRtsp}--hashRtsp={hashRtsp}");
+                    _memoryCache.Set<int>(hashRtsp, process.Id);
+                    //ProcessManager.ProcessIdDic.TryAdd(hashRtsp, process.Id);
+                    _logger.LogDebug($"traceId={traceId} [3] has been registered processId; rtsp={hashRtsp}--hashRtsp={hashRtsp}");
                     Console.WriteLine($"process.Id={process.Id}; process.MachineName={process.MachineName}");
 
                     process.BeginOutputReadLine();
@@ -151,13 +153,14 @@ namespace Leon.Live.API
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError(ex, $"{ex.Message}");
+                    _logger.LogError(ex, $"{ex.Message};strRtsp={strRtsp}");
                     throw;
                 }
                 finally
                 {
                     process.Dispose();
-                    ProcessManager.ProcessIdDic.Remove(hashRtsp, out int vale);
+                    _memoryCache.Remove(hashRtsp);
+                    //ProcessManager.ProcessIdDic.Remove(hashRtsp, out int vale);
                 }
             }, TaskCreationOptions.LongRunning);
             //task.ContinueWith(failedTask =>

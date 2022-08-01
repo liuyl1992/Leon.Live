@@ -1,10 +1,9 @@
 ﻿using Leon.Live.API.Live;
-using System.IO;
 using WebApiClientCore;
 
 namespace Leon.Live.API
 {
-    public interface ILiveRemoting: IHttpApi
+    public interface ILiveRemoting : IHttpApi
     {
         [WebApiClientCore.Attributes.HttpGet("https://anthonygiretti.blob.core.windows.net/videos/earth.mp4")]
         //[ApiClientFilter]
@@ -59,8 +58,8 @@ namespace Leon.Live.API
         /// <returns></returns>
         [WebApiClientCore.Attributes.HttpGet("/index/api/addStreamProxy")]
         ITask<ZLMediaKitResponse> AddStreamProxyAsync(string secret, string vhost, string app,
-           string stream,string url="", int? retry_count=null,int? rtp_type=null,int? timeout_sec=null,bool? enable_hls=null,
-           bool? enable_mp4=null,bool? enable_rtsp=null,bool? enable_rtmp=null,bool? enable_ts=null,bool? enable_fmp4=null,bool? enable_audio=null,
-           bool? add_mute_audio= null,string? mp4_save_path=null,int? mp4_max_second=null,string? hls_save_path=null);
+           string stream, string url = "", int? retry_count = null, int? rtp_type = null, int? timeout_sec = null, bool? enable_hls = null,
+           bool? enable_mp4 = null, bool? enable_rtsp = null, bool? enable_rtmp = null, bool? enable_ts = null, bool? enable_fmp4 = null, bool? enable_audio = null,
+           bool? add_mute_audio = null, string? mp4_save_path = null, int? mp4_max_second = null, string? hls_save_path = null);
     }
 }

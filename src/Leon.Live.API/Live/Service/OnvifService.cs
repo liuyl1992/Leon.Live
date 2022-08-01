@@ -1,12 +1,7 @@
 ﻿
 using Mictlanix.DotNet.Onvif;
 using Mictlanix.DotNet.Onvif.Common;
-using Mictlanix.DotNet.Onvif.Ptz;
 using System.Collections.Generic;
-using System.IO;
-using System.Net.Http;
-using System.Text.RegularExpressions;
-using System.Threading;
 
 namespace Leon.Live.API
 {
