@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace Leon.Live.API.Live
+namespace Leon.Live.SRS
 {// Root myDeserializedClass = JsonConvert.DeserializeObject<Root>(myJsonResponse);
     public class Client
     {

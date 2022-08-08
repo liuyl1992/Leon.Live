@@ -1,6 +1,6 @@
 ﻿using WebApiClientCore.Serialization.JsonConverters;
 
-namespace Leon.Live.API
+namespace Leon.Live.SRS
 {
     /// <summary>
     /// 远程调用

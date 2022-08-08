@@ -3,7 +3,7 @@ using Leon.VideoStream;
 using System.IO;
 using System.Threading;
 
-namespace Leon.Live.API
+namespace Leon.Live.SRS
 {
     public class LiveTask //: IStartupTask
     {

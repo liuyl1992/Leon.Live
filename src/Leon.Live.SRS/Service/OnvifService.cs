@@ -3,7 +3,7 @@ using Mictlanix.DotNet.Onvif;
 using Mictlanix.DotNet.Onvif.Common;
 using System.Collections.Generic;
 
-namespace Leon.Live.API
+namespace Leon.Live.SRS
 {
     public interface IOnvifService
     {
@@ -57,23 +57,23 @@ namespace Leon.Live.API
                 if (profile_token == null)
                 {
                     profile_token = profile.token;
-                    absolute_move = !string.IsNullOrWhiteSpace(profile.PTZConfiguration.DefaultAbsolutePantTiltPositionSpace);
-                    relative_move = !string.IsNullOrWhiteSpace(profile.PTZConfiguration.DefaultRelativePanTiltTranslationSpace);
-                    continuous_move = !string.IsNullOrWhiteSpace(profile.PTZConfiguration.DefaultContinuousPanTiltVelocitySpace);
+                    absolute_move = !string.IsNullOrWhiteSpace(profile.PTZConfiguration?.DefaultAbsolutePantTiltPositionSpace);
+                    relative_move = !string.IsNullOrWhiteSpace(profile.PTZConfiguration?.DefaultRelativePanTiltTranslationSpace);
+                    continuous_move = !string.IsNullOrWhiteSpace(profile.PTZConfiguration?.DefaultContinuousPanTiltVelocitySpace);
                 }
 
                 Console.WriteLine($"\tTranslation Support");
-                Console.WriteLine($"\t\tAbsolute Translation: {!string.IsNullOrWhiteSpace(profile.PTZConfiguration.DefaultAbsolutePantTiltPositionSpace)}");
-                Console.WriteLine($"\t\tRelative Translation: {!string.IsNullOrWhiteSpace(profile.PTZConfiguration.DefaultRelativePanTiltTranslationSpace)}");
-                Console.WriteLine($"\t\tContinuous Translation: {!string.IsNullOrWhiteSpace(profile.PTZConfiguration.DefaultContinuousPanTiltVelocitySpace)}");
+                Console.WriteLine($"\t\tAbsolute Translation: {!string.IsNullOrWhiteSpace(profile.PTZConfiguration?.DefaultAbsolutePantTiltPositionSpace)}");
+                Console.WriteLine($"\t\tRelative Translation: {!string.IsNullOrWhiteSpace(profile.PTZConfiguration?.DefaultRelativePanTiltTranslationSpace)}");
+                Console.WriteLine($"\t\tContinuous Translation: {!string.IsNullOrWhiteSpace(profile.PTZConfiguration?.DefaultContinuousPanTiltVelocitySpace)}");
 
-                if (!string.IsNullOrWhiteSpace(profile.PTZConfiguration.DefaultRelativePanTiltTranslationSpace))
+                if (!string.IsNullOrWhiteSpace(profile.PTZConfiguration?.DefaultRelativePanTiltTranslationSpace))
                 {
-                    var pan = profile.PTZConfiguration.PanTiltLimits.Range.XRange;
-                    var tilt = profile.PTZConfiguration.PanTiltLimits.Range.YRange;
-                    var zoom = profile.PTZConfiguration.ZoomLimits.Range.XRange;
+                    var pan = profile.PTZConfiguration?.PanTiltLimits.Range.XRange;
+                    var tilt = profile.PTZConfiguration?.PanTiltLimits.Range.YRange;
+                    var zoom = profile.PTZConfiguration?.ZoomLimits.Range.XRange;
 
-                    Console.WriteLine($"\tPan Limits: [{pan.Min}, {pan.Max}] Tilt Limits: [{tilt.Min}, {tilt.Max}] Tilt Limits: [{zoom.Min}, {zoom.Max}]");
+                    Console.WriteLine($"\tPan Limits: [{pan?.Min}, {pan?.Max}] Tilt Limits: [{tilt?.Min}, {tilt.Max}] Tilt Limits: [{zoom?.Min}, {zoom?.Max}]");
                 }
                 var streamUri = await media.GetStreamUriAsync(streamSetup, profile.token);
                 rtspPaths.Add(streamUri.Uri);

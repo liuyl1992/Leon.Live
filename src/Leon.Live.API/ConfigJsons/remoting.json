@@ -19,8 +19,9 @@
 				"WriteIndented": false
 			}
 		},
-		"IZLMediaKitRemoting": { 
+		"IZLMediaKitRemoting": {
 			"HttpHost": "http://192.168.100.187:8082",
+			"Secret": "035c73f7-bb6b-4889-a715-d9eb2d1925cc",
 			"UseParameterPropertyValidate": false,
 			"UseReturnValuePropertyValidate": false,
 			"JsonSerializeOptions": {

@@ -1,0 +1,26 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<TargetFramework>net6.0</TargetFramework>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<Nullable>enable</Nullable>
+		<LangVersion>preview</LangVersion>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<PackageReference Include="Mictlanix.DotNet.OnvifClient" Version="0.0.3" />
+		<PackageReference Include="NetPro.Utility" Version="6.0.15" />
+		<PackageReference Include="NetPro.Web.Api" Version="6.0.15" />
+		<PackageReference Include="NetPro.Dependency" Version="6.0.15" />
+		<PackageReference Include="FreeRedis" Version="0.5.9" />
+		<PackageReference Include="WebApiClientCore" Version="2.0.2" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\Leon.VideoStream\Leon.VideoStream.csproj" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <Folder Include="Task\" />
+	</ItemGroup>
+</Project>

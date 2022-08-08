@@ -9,6 +9,7 @@
 		<DocumentationFile>bin\Debug\$(NetCoreTargetVersion)\Leon.Live.Api.xml</DocumentationFile>
 		<NoWarn>1701;1702;1705;1591</NoWarn>
 	</PropertyGroup>
+	
 	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
 		<DocumentationFile>bin\Debug\$(NetCoreTargetVersion)\Leon.Live.Api.xml</DocumentationFile>
 		<NoWarn>1701;1702;1705;1591</NoWarn>
@@ -36,13 +37,9 @@
 	</ItemGroup>
 
 	<ItemGroup>
+		<ProjectReference Include="..\Leon.Live.SRS\Leon.Live.SRS.csproj" />
+		<ProjectReference Include="..\Leon.Live.ZLMedia\Leon.Live.ZLMedia.csproj" />
 		<ProjectReference Include="..\Leon.VideoStream\Leon.VideoStream.csproj" />
 	</ItemGroup>
-
-	<ProjectExtensions>
-		<VisualStudio>
-			<UserProperties appsettings_1json__JsonSchema="" />
-		</VisualStudio>
-	</ProjectExtensions>
 
 </Project>

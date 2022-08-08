@@ -1,11 +1,12 @@
-﻿using Leon.VideoStream;
+﻿//using Leon.VideoStream;
+using Leon.VideoStream;
 using Microsoft.Extensions.Caching.Memory;
 using System.Collections.Generic;
 using System.IO;
 using System.Net.Http;
 using System.Threading;
 
-namespace Leon.Live.API
+namespace Leon.Live.SRS
 {
     public interface ILiveService
     {
@@ -123,7 +124,7 @@ namespace Leon.Live.API
 
                     _memoryCache.Set<int>(hashRtsp, process.Id);
                     //ProcessManager.ProcessIdDic.TryAdd(hashRtsp, process.Id);
-                    _logger.LogDebug($"traceId={traceId} [3] has been registered processId; rtsp={hashRtsp}--hashRtsp={hashRtsp}");
+                    _logger.LogDebug($"traceId={traceId} [3] has been registered processId; rtsp={strRtsp}--hashRtsp={hashRtsp}");
                     Console.WriteLine($"process.Id={process.Id}; process.MachineName={process.MachineName}");
 
                     process.BeginOutputReadLine();
@@ -136,6 +137,8 @@ namespace Leon.Live.API
 
                     process.ErrorDataReceived += (ss, ee) =>
                      {
+                         //exception:
+                         //Connection timed out
                          _logger.LogDebug($"Er:{ee.Data}");
                      };
 

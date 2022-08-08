@@ -1,4 +1,4 @@
-﻿namespace Leon.Live.API
+﻿namespace Leon.Live.SRS
 {
     public class ZLMediaKitResponse
     {

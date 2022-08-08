@@ -1,17 +1,17 @@
 ﻿using System.Collections.Generic;
 
-namespace Leon.Live.API.Examples.Controllers
+namespace Leon.Live.SRS
 {
     [ApiController]
     [Route("[controller]")]
     public class OnvifController : ControllerBase
     {
         private readonly IHostEnvironment _hostEnvironment;
-        private readonly ILogger<LiveController> _logger;
+        private readonly ILogger<OnvifController> _logger;
         private readonly IOnvifService _onvifService;
 
         public OnvifController(IHostEnvironment hostEnvironment,
-            ILogger<LiveController> logger,
+            ILogger<OnvifController> logger,
             IOnvifService onvifService
             )
         {

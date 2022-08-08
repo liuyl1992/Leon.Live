@@ -1,7 +1,7 @@
-﻿using Leon.Live.API.Live;
+﻿using Leon.Live.SRS.Model;
 using WebApiClientCore;
 
-namespace Leon.Live.API
+namespace Leon.Live.SRS
 {
     public interface ILiveRemoting : IHttpApi
     {
