@@ -17,7 +17,7 @@
 	<ItemGroup>
 		<None Include="ConfigJsons\*" />
 	</ItemGroup>
-	
+		
 	<ItemGroup>
 		<PackageReference Include="Mictlanix.DotNet.OnvifClient" Version="0.0.3" />
 		<PackageReference Include="NetPro.Utility" Version="6.0.15" />

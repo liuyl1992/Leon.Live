@@ -10,7 +10,7 @@ global using Microsoft.Extensions.DependencyInjection;
 global using Microsoft.Extensions.DependencyInjection.Extensions;
 global using Microsoft.Extensions.Hosting;
 global using Microsoft.Extensions.Logging;
-global using Newtonsoft.Json;
+//global using Newtonsoft.Json;
 global using System;
 //非微软官方空间引用
 global using System.NetPro;

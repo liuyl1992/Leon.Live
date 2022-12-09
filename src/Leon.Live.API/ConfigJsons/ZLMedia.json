@@ -1,0 +1,5 @@
+{
+  "ConnectionStrings": {
+    "ZLMediaConnection": "Data Source=../ZLMedia.db;Cache=Shared"
+  }
+}

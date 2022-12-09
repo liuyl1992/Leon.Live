@@ -14,13 +14,18 @@
 		<PackageReference Include="NetPro.Dependency" Version="6.0.15" />
 		<PackageReference Include="FreeRedis" Version="0.5.9" />
 		<PackageReference Include="WebApiClientCore" Version="2.0.2" />
+
+		<PackageReference Include="IdGen.DependencyInjection" Version="3.0.0" />
+		<PackageReference Include="Microsoft.AspNetCore.Mvc.Core" Version="2.2.5" />
+		<PackageReference Include="FreeSql.DbContext" Version="3.2.664" />
+		<PackageReference Include="FreeSql.Provider.MySql" Version="3.2.664" />
+		<PackageReference Include="FreeSql.Repository" Version="3.2.664" />
+		<PackageReference Include="FreeSql.Provider.Sqlite" Version="3.2.664" />
+		<PackageReference Include="IdleBus" Version="1.5.2" />
+		<PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
 	</ItemGroup>
 
 	<ItemGroup>
 		<ProjectReference Include="..\Leon.VideoStream\Leon.VideoStream.csproj" />
-	</ItemGroup>
-
-	<ItemGroup>
-	  <Folder Include="Task\" />
 	</ItemGroup>
 </Project>

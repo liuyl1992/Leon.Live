@@ -14,5 +14,6 @@
   "ApiStartup": 2147483647,
   "RemotingStartup": 2147483647,
   "RedisStartup": 2147483647,
-  "RemotingZLMediaStartup": 2147483647
+  "RemotingZLMediaStartup": 2147483647,
+  "ZLMediaDBStartup": 2147483647
 }

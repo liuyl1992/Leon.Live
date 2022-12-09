@@ -1,6 +1,6 @@
 ﻿using WebApiClientCore;
 
-namespace Leon.Live.SRS
+namespace Leon.Live.ZLMedia
 {
     public interface IZLMediaKitRemoting : IHttpApi
     {

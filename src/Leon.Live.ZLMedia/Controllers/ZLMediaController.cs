@@ -1,18 +1,18 @@
 ﻿using System.Linq;
 
-namespace Leon.Live.SRS
+namespace Leon.Live.ZLMedia
 {
     [ApiController]
     [Route("[controller]")]
-    public class MediaController : ControllerBase
+    public class ZLMediaController : ControllerBase
     {
         private readonly IHostEnvironment _hostEnvironment;
-        private readonly ILogger<MediaController> _logger;
+        private readonly ILogger<ZLMediaController> _logger;
         private readonly IZLMediaKitRemoting _zLMediaKitRemoting;
         private readonly IConfiguration _configuration;
 
-        public MediaController(IHostEnvironment hostEnvironment,
-            ILogger<MediaController> logger,
+        public ZLMediaController(IHostEnvironment hostEnvironment,
+            ILogger<ZLMediaController> logger,
             IZLMediaKitRemoting zLMediaKitRemoting,
             IConfiguration configuration
             )
@@ -31,9 +31,9 @@ namespace Leon.Live.SRS
         /// <param name="token"></param>
         /// <returns></returns>
         [HttpGet("video/StrPlay")]
-        public async Task<IActionResult> AddStreamPusherProxyAsync(string strRtsp, string group = "default", string token = "")
+        public async Task<IActionResult> AddStreamPusherProxyAsync(string strRtsp, string? group = "default", string? token = " ")
         {
-            var result = await _zLMediaKitRemoting.AddStreamProxyAsync(secret: _configuration.GetValue<string>("IZLMediaKitRemoting:Secret"),
+            var result = await _zLMediaKitRemoting.AddStreamProxyAsync(secret:_configuration.GetValue<string>("IZLMediaKitRemoting:Secret"),
                  vhost: "__defaultVhost__",
                  app: $"ZLMediaKit/{group}/live",
                  stream: $"{EncryptHelper.Sha256(strRtsp + group)}",
@@ -44,6 +44,8 @@ namespace Leon.Live.SRS
                  );
 
             // reference: url rule https://github.com/ZLMediaKit/ZLMediaKit/wiki/%E6%92%AD%E6%94%BEurl%E8%A7%84%E5%88%99
+
+
 
             var httpHost = _configuration.GetValue<string>("Remoting:IZLMediaKitRemoting:HttpHost");
             var index = result.Data.Key.IndexOf('/');

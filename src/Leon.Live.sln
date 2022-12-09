@@ -7,7 +7,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Leon.Live.API", "Leon.Live.
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Leon.VideoStream", "Leon.VideoStream\Leon.VideoStream.csproj", "{AB25C745-7262-4380-98F9-18645A90F1E6}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Leon.Live.SRS", "Leon.Live.SRS\Leon.Live.SRS.csproj", "{172E5E0A-AC49-4CD6-AEAA-04EE1167916C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Leon.Live.SRS", "Leon.Live.SRS\Leon.Live.SRS.csproj", "{172E5E0A-AC49-4CD6-AEAA-04EE1167916C}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Leon.Live.ZLMedia", "Leon.Live.ZLMedia\Leon.Live.ZLMedia.csproj", "{99CB3DE1-A5D5-4B4B-8DBC-C9D3F7839C87}"
 EndProject
